@@ -2,10 +2,12 @@ import { useRef, useState, useEffect } from "react";
 
 // stem name -> URL, matching the `stems` dict returned by GET /jobs/{id}
 type Stems = Record<string, string>;
+type StemUI = { volume: number; muted: boolean};
 
 export function useAudioPlayer() {
   const ctxRef = useRef<AudioContext | null>(null);
-  const [stemNames, setStemNames] = useState<string[]>([]);
+  const [stemState, setStemState] = useState<Record<string, StemUI>>({});
+
 
   // Decoded audio + the persistent per-stem gain nodes. These are refs, not
   // state: they're mutable audio objects that must survive re-renders and
@@ -41,7 +43,9 @@ export function useAudioPlayer() {
       }),
     );
 
-    setStemNames(Object.keys(stems));
+    const initial: Record<string, StemUI> = {};
+    for (const name of Object.keys(stems)) initial[name] = { volume: 10, muted: false };
+    setStemState(initial);
   }
 
   // ── Synchronized playback ──
@@ -89,6 +93,10 @@ export function useAudioPlayer() {
     const gain = gainsRef.current.get(name);
     if (gain) gain.gain.value = 0;
   }
+
+  function solo(name: string){
+    for 
+  }
   // TODO (yours): mute(name) and solo(name), built on top of setStemGain.
 
   // close the context when the component using this hook unmounts
@@ -98,5 +106,5 @@ export function useAudioPlayer() {
     };
   }, []);
 
-  return { load, play, stop, setStemGain, mute, stemNames, isPlaying };
+  return { load, play, stop, setStemGain, mute, stemState, isPlaying };
 }
