@@ -3,8 +3,6 @@ from rq.job import Job
 from rq.exceptions import NoSuchJobError
 from pydantic import BaseModel
 
-from collections import defaultdict
-
 from app.config import STORAGE_ROOT
 from app.queue import redis_client
 
@@ -14,7 +12,7 @@ router = APIRouter(prefix="/jobs")
 class JobStatus(BaseModel):
     id: str
     status: str
-    stems: dict | None
+    stems: dict[str, str] | None = None
 
 
 @router.get("/{job_id}")
