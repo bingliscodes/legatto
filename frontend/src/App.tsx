@@ -1,4 +1,5 @@
 import { ModeToggle } from "@/components/mode-toggle";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -6,34 +7,36 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { StemControl } from "@/components/stem-control";
 import { useAudioPlayer } from "@/hooks/use-audio-player";
 
+// Hardcoded for now. The next (and last) Slice 3 step replaces this with the
+// real flow: upload → POST /tracks → poll GET /jobs/{id} → load(stems from response).
+const TRACK_ID = "b82a825b98df4d29969a1e422e24b6df";
+const STEM_NAMES = ["guitar", "drums", "bass", "vocals", "other", "piano"];
+const stems = Object.fromEntries(
+  STEM_NAMES.map((name) => [
+    name,
+    `http://localhost:8000/tracks/${TRACK_ID}/stems/${name}.wav`,
+  ]),
+);
+
 function App() {
-  const { load, play, setStemGain } = useAudioPlayer();
-  const stems = {
-    guitar:
-      "http://localhost:8000/tracks/b82a825b98df4d29969a1e422e24b6df/stems/guitar.wav",
-    drums:
-      "http://localhost:8000/tracks/b82a825b98df4d29969a1e422e24b6df/stems/drums.wav",
-    bass: "http://localhost:8000/tracks/b82a825b98df4d29969a1e422e24b6df/stems/bass.wav",
-    vocals:
-      "http://localhost:8000/tracks/b82a825b98df4d29969a1e422e24b6df/stems/vocals.wav",
-    other:
-      "http://localhost:8000/tracks/b82a825b98df4d29969a1e422e24b6df/stems/other.wav",
-    piano:
-      "http://localhost:8000/tracks/b82a825b98df4d29969a1e422e24b6df/stems/piano.wav",
-  };
-  const handleLoadClick = () => {
-    load(stems);
-  };
+  const {
+    load,
+    play,
+    stop,
+    toggleMute,
+    toggleSolo,
+    setVolume,
+    stemState,
+    soloed,
+    isPlaying,
+  } = useAudioPlayer();
 
-  const handlePlayClick = () => {
-    play();
-  };
+  const stemNames = Object.keys(stemState);
+  const loaded = stemNames.length > 0;
 
-  const handleSetStemGainClick = () => {
-    setStemGain("guitar", 0);
-  };
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b">
@@ -56,21 +59,42 @@ function App() {
           <CardHeader>
             <CardTitle>Multitrack player</CardTitle>
             <CardDescription>
-              Upload a song; once separation finishes you'll be able to mute or
-              solo each stem and play along.
+              Load the stems, then mute or solo each one and play along.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            {/*
-              TODO (yours — the load-bearing part):
-              1. an upload control that POSTs to /tracks
-              2. poll GET /jobs/{id} until status === "finished"
-              3. the Web Audio multitrack player (per-stem gain, synced playback)
-            */}
-            <button onClick={handleLoadClick}>Load</button>
-            <button onClick={handlePlayClick}>Play</button>
-            <button onClick={handleSetStemGainClick}>Set Stem Gain</button>
-            <p className="text-sm text-muted-foreground">Player coming soon.</p>
+          <CardContent className="space-y-6">
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={() => load(stems)}>
+                Load stems
+              </Button>
+              <Button onClick={play} disabled={!loaded}>
+                Play
+              </Button>
+              <Button variant="outline" onClick={stop} disabled={!isPlaying}>
+                Stop
+              </Button>
+            </div>
+
+            {loaded ? (
+              <div className="space-y-2">
+                {stemNames.map((name) => (
+                  <StemControl
+                    key={name}
+                    name={name}
+                    volume={stemState[name].volume}
+                    muted={stemState[name].muted}
+                    soloed={soloed === name}
+                    onVolumeChange={(v) => setVolume(name, v)}
+                    onMuteToggle={() => toggleMute(name)}
+                    onSoloToggle={() => toggleSolo(name)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Click “Load stems” to begin.
+              </p>
+            )}
           </CardContent>
         </Card>
       </main>

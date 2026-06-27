@@ -84,23 +84,20 @@ export function useAudioPlayer() {
     setIsPlaying(false);
   }
 
-  // ── Per-stem volume (mute = set to 0; solo = others to 0) ──
-  function setStemGain(name: string, value: number) {
-    const gain = gainsRef.current.get(name);
-    if (gain) gain.gain.value = value;
-  }
-
-  // UI Controls
+  // ── Sync the audio graph to state ──
+  // The gains are a projection of stemState/soloed: whenever either changes,
+  // recompute every stem's effective gain and apply it. Handlers stay pure.
   useEffect(() => {
     for (const [name, ui] of Object.entries(stemState)) {
-      const effective = ui.muted
+      const gain = gainsRef.current.get(name);
+      if (!gain) continue;
+      gain.gain.value = ui.muted
         ? 0
         : soloed && soloed !== name
           ? 0
           : ui.volume / 100;
-      setStemGain(name, effective);
     }
-  });
+  }, [stemState, soloed]);
 
   function setVolume(name: string, volume: number) {
     setStemState((p) => ({ ...p, [name]: { ...p[name], volume } }));
@@ -115,7 +112,6 @@ export function useAudioPlayer() {
     setSoloed((prev) => (prev === name ? null : name)); // click again to un-solo
   }
 
-  // close the context when the component using this hook unmounts
   useEffect(() => {
     return () => {
       ctxRef.current?.close();
@@ -126,12 +122,11 @@ export function useAudioPlayer() {
     load,
     play,
     stop,
-    setStemGain,
-    mute,
     toggleMute,
     setVolume,
     toggleSolo,
     stemState,
+    soloed,
     isPlaying,
   };
 }
