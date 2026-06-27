@@ -9,9 +9,6 @@ import os
 
 router = APIRouter(prefix="/tracks")
 
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
-
 
 @router.post("/")
 async def proccess_audio(audio_file: UploadFile):
@@ -20,17 +17,15 @@ async def proccess_audio(audio_file: UploadFile):
     track_id = uuid4().hex
     job_dir = STORAGE_ROOT / track_id
     job_dir.mkdir(parents=True, exist_ok=True)
-    dest = job_dir / audio_file.filename
-    dest.write_bytes(contents)
 
-    job = task_queue.enqueue(stem_separator, input_path, job_dir, job_id=track_id)
+    job = task_queue.enqueue(stem_separator, input_path, job_dir)
     return track_id
 
 
-async def save_file_to_disk(file: UploadFile) -> str:
+async def save_file_to_disk(file: UploadFile, job_dir) -> str:
     contents = await file.read()
 
-    destination_path = UPLOAD_DIR / file.filename
+    destination_path = job_dir / file.filename
 
     destination_path.write_bytes(contents)
 
