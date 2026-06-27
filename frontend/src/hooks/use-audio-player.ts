@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from "react";
+import axios from "axios";
 
 export function useAudioPlayer() {
   const ctxRef = useRef<AudioContext | null>(null);
@@ -13,9 +14,16 @@ export function useAudioPlayer() {
   async function play(url: string) {
     const ctx = getContext();
     await ctx.resume(); // in case it started suspended
-    // TODO (yours): fetch(url) -> res.arrayBuffer() -> ctx.decodeAudioData(...)
-    //   -> ctx.createBufferSource() -> .connect(ctx.destination) -> .start()
-    //   -> setIsPlaying(true)
+    // Make call for resource
+    const audio_file = await axios.get(url);
+    const arrayBuffer = audio_file.arrayBuffer();
+    ctx.decodeAudioData(arrayBuffer);
+
+    const source = ctx.createBufferSource();
+    source.buffer = arrayBuffer;
+    source.connect(ctx.destination);
+    source.start();
+    setIsPlaying(true);
   }
 
   // close the context when the component unmounts
