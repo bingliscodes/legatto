@@ -1,0 +1,20 @@
+CLAUDE.md
+
+**.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+
+# Local storage for uploads + generated stems
+storage/
+
+# macOS
+.DS_Store

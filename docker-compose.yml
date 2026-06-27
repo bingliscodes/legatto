@@ -1,0 +1,8 @@
+# Local dev infrastructure.
+# Slice 1 only needs Redis (RQ's broker + job registry).
+# Postgres will be added here in the slice where we persist track/stem metadata.
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"

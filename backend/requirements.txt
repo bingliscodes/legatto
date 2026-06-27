@@ -1,0 +1,7 @@
+# Slice 1 (tracer bullet) dependencies — deliberately light.
+# torch + demucs are NOT here yet; they arrive in Slice 2 with the real separator.
+fastapi
+uvicorn[standard]
+python-multipart
+redis
+rq
