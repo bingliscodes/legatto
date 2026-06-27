@@ -2,12 +2,11 @@ import { useRef, useState, useEffect } from "react";
 
 // stem name -> URL, matching the `stems` dict returned by GET /jobs/{id}
 type Stems = Record<string, string>;
-type StemUI = { volume: number; muted: boolean};
+type StemUI = { volume: number; muted: boolean };
 
 export function useAudioPlayer() {
   const ctxRef = useRef<AudioContext | null>(null);
   const [stemState, setStemState] = useState<Record<string, StemUI>>({});
-
 
   // Decoded audio + the persistent per-stem gain nodes. These are refs, not
   // state: they're mutable audio objects that must survive re-renders and
@@ -44,7 +43,8 @@ export function useAudioPlayer() {
     );
 
     const initial: Record<string, StemUI> = {};
-    for (const name of Object.keys(stems)) initial[name] = { volume: 10, muted: false };
+    for (const name of Object.keys(stems))
+      initial[name] = { volume: 10, muted: false };
     setStemState(initial);
   }
 
@@ -94,8 +94,29 @@ export function useAudioPlayer() {
     if (gain) gain.gain.value = 0;
   }
 
-  function solo(name: string){
-    for 
+  function solo(name: string) {
+    for (const inst in gainsRef.current) {
+      if (inst !== name) {
+        inst.gain.value = 0;
+      }
+    }
+  }
+
+  // UI Controls
+  function setVolume(name: string, volume: number) {
+    setStemGain(name, volume);
+    setStemState((prev) => ({
+      ...prev,
+      [name]: { ...prev[name], volume },
+    }));
+  }
+
+  function toggleMute(name: string) {
+    setStemState((prev) => {
+      const muted = !prev[name].muted;
+      setStemGain(name, muted ? 0 : prev[name].volume / 10);
+      return { ...prev, [name]: { ...prev[name], muted } };
+    });
   }
   // TODO (yours): mute(name) and solo(name), built on top of setStemGain.
 
@@ -106,5 +127,15 @@ export function useAudioPlayer() {
     };
   }, []);
 
-  return { load, play, stop, setStemGain, mute, stemState, isPlaying };
+  return {
+    load,
+    play,
+    stop,
+    setStemGain,
+    mute,
+    toggleMute,
+    setVolume,
+    stemState,
+    isPlaying,
+  };
 }
