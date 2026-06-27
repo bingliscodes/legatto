@@ -7,5 +7,5 @@ load_dotenv()
 
 # Create Redis connection
 url = os.getenv("REDIS_URL")
-redis_client = Redis.from_url(url, decode_response=True)
+redis_client = Redis.from_url(url)
 task_queue = Queue(connection=redis_client)
