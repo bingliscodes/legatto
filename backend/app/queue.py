@@ -3,5 +3,6 @@ from rq import Queue
 import os
 
 # Create Redis connection
-redis_conn = Redis(os.environ["REDIS_URL"])
-task_queue = Queue(connection=redis_conn)
+url = os.environ["REDIS_URL"]
+redis_client = Redis.from_url(url, decode_response=True)
+task_queue = Queue(connection=redis_client)
