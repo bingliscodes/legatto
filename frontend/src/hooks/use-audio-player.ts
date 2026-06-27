@@ -44,15 +44,20 @@ export function useAudioPlayer() {
   // ── Synchronized playback ──
   function play() {
     const ctx = getContext();
-    stop(); // clear any in-flight playback first (prevents overlapping copies)
+    stop();
 
     const when = ctx.currentTime + 0.1; // ONE shared start time → sample-accurate sync
     const sources: AudioBufferSourceNode[] = [];
 
     for (const [name, buffer] of buffersRef.current) {
-      // TODO (yours): for each stem, create a fresh source, wire it as
-      //   source → gainsRef.current.get(name) → (gain is already on destination),
-      //   start it at `when`, and push it into `sources`.
+      const gain = gainsRef.current.get(name);
+      if (!gain) continue;
+
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(gain);
+      source.start(when);
+      sources.push(source);
     }
 
     sourcesRef.current = sources;
