@@ -6,13 +6,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useAudioPlayer } from "@/hooks/use-audio-player";
 
 function App() {
+  const { play } = useAudioPlayer();
   const handleClick = () => {
-    const audioCtx: AudioContext = new AudioContext();
-    audioCtx.initAudio();
-
     console.log("Button Clicked!");
+    play(
+      "http://localhost:8000/tracks/b82a825b98df4d29969a1e422e24b6df/stems/guitar.wav",
+    );
   };
   return (
     <div className="min-h-screen bg-background text-foreground">
