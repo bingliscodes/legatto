@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status, Response
 from rq.job import Job
 from rq.exceptions import NoSuchJobError
+
 from app.queue import redis_client
 
 router = APIRouter(prefix="/jobs")
