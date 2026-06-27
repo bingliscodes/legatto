@@ -1,4 +1,4 @@
-from fastapi import UploadFile, APIRouter
+from fastapi import UploadFile, APIRouter, HTTPException
 from fastapi.responses import FileResponse
 from uuid import uuid4
 from pathlib import Path
@@ -37,5 +37,9 @@ async def proccess_audio(audio_file: UploadFile):
 
 @router.get("/{track_id}/stems/{filename}")
 def get_stem(track_id: str, filename: str):
-    path = STORAGE_ROOT / track_id / "stems" / filename
+    stems_dir = (STORAGE_ROOT / track_id / "stems").resolve()
+    path = (stems_dir / filename).resolve()
+    if not path.is_relative_to(stems_dir) or not path.is_file():
+        raise HTTPException(status_code=404)
+
     return FileResponse(path)
