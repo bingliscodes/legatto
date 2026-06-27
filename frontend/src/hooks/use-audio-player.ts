@@ -116,22 +116,17 @@ export function useAudioPlayer() {
   });
 
   function setVolume(name: string, volume: number) {
-    setStemGain(name, volume);
-    setStemState((prev) => ({
-      ...prev,
-      [name]: { ...prev[name], volume },
+    setStemState((p) => ({ ...p, [name]: { ...p[name], volume } }));
+  }
+  function toggleMute(name: string) {
+    setStemState((p) => ({
+      ...p,
+      [name]: { ...p[name], muted: !p[name].muted },
     }));
   }
-
-  function toggleMute(name: string) {
-    setStemState((prev) => {
-      const muted = !prev[name].muted;
-      setStemGain(name, muted ? 0 : prev[name].volume / 10);
-      return { ...prev, [name]: { ...prev[name], muted } };
-    });
+  function toggleSolo(name: string) {
+    setSoloed((prev) => (prev === name ? null : name)); // click again to un-solo
   }
-
-  function toggleSolo(name: string) {}
 
   // close the context when the component using this hook unmounts
   useEffect(() => {
