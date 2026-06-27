@@ -20,6 +20,8 @@ async def proccess_audio(audio_file: UploadFile):
     track_id = uuid4().hex
     job_dir = STORAGE_ROOT / track_id
     job_dir.mkdir(parents=True, exist_ok=True)
+    dest = job_dir / audio_file.filename
+    dest.write_bytes(contents)
 
     job = task_queue.enqueue(stem_separator, input_path, job_dir, job_id=track_id)
     return track_id
@@ -30,7 +32,6 @@ async def save_file_to_disk(file: UploadFile) -> str:
 
     destination_path = UPLOAD_DIR / file.filename
 
-    with open(destination_path, "wb") as f:
-        f.write(contents)
+    destination_path.write_bytes(contents)
 
     return destination_path
