@@ -1,4 +1,5 @@
 from fastapi import UploadFile, APIRouter
+from fastapi.responses import FileResponse
 from uuid import uuid4
 from pathlib import Path
 
@@ -7,6 +8,16 @@ from app.tasks import stem_separator
 from app.config import STORAGE_ROOT
 
 router = APIRouter(prefix="/tracks")
+
+
+async def save_file_to_disk(file: UploadFile, job_dir) -> Path:
+    contents = await file.read()
+
+    destination_path = job_dir / file.filename
+
+    destination_path.write_bytes(contents)
+
+    return destination_path
 
 
 @router.post("/")
@@ -24,11 +35,7 @@ async def proccess_audio(audio_file: UploadFile):
     return track_id
 
 
-async def save_file_to_disk(file: UploadFile, job_dir) -> Path:
-    contents = await file.read()
-
-    destination_path = job_dir / file.filename
-
-    destination_path.write_bytes(contents)
-
-    return destination_path
+@router.get("/{track_id}/stems/{filename}")
+def get_stem(track_id: str, filename: str):
+    path = STORAGE_ROOT / track_id / "stems" / filename
+    return FileResponse(path)
