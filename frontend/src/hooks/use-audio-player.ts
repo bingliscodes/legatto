@@ -84,6 +84,11 @@ export function useAudioPlayer() {
     const gain = gainsRef.current.get(name);
     if (gain) gain.gain.value = value;
   }
+
+  function mute(name: string) {
+    const gain = gainsRef.current.get(name);
+    if (gain) gain.gain.value = 0;
+  }
   // TODO (yours): mute(name) and solo(name), built on top of setStemGain.
 
   // close the context when the component using this hook unmounts
@@ -93,5 +98,5 @@ export function useAudioPlayer() {
     };
   }, []);
 
-  return { load, play, stop, setStemGain, isPlaying };
+  return { load, play, stop, setStemGain, mute, stemNames, isPlaying };
 }
