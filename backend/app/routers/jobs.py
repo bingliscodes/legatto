@@ -22,5 +22,5 @@ def get_job_by_id(job_id: str) -> JobStatus:
     except NoSuchJobError:
         raise HTTPException(
             status_code=404,
-            details=f"Job {job_id} does not exist or has expired in Redis.",
+            detail=f"Job {job_id} does not exist or has expired in Redis.",
         )
