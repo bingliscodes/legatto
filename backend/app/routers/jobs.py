@@ -11,6 +11,7 @@ router = APIRouter(prefix="/jobs")
 class JobStatus(BaseModel):
     id: str
     status: str
+    stems: dict | None
 
 
 @router.get("/{job_id}")
