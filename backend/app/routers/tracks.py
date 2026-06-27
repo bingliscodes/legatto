@@ -39,6 +39,7 @@ async def proccess_audio(audio_file: UploadFile):
 def get_stem(track_id: str, filename: str):
     stems_dir = (STORAGE_ROOT / track_id / "stems").resolve()
     path = (stems_dir / filename).resolve()
+    print("stems_dir", stems_dir, "path: ", path)
     if not path.is_relative_to(stems_dir) or not path.is_file():
         raise HTTPException(status_code=404)
 
