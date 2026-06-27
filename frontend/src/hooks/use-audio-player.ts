@@ -90,19 +90,6 @@ export function useAudioPlayer() {
     if (gain) gain.gain.value = value;
   }
 
-  function mute(name: string) {
-    const gain = gainsRef.current.get(name);
-    if (gain) gain.gain.value = 0;
-  }
-
-  function solo(name: string) {
-    for (const [inst, gain] of gainsRef.current) {
-      if (inst !== name) {
-        gain.gain.value = 0;
-      }
-    }
-  }
-
   // UI Controls
   useEffect(() => {
     for (const [name, ui] of Object.entries(stemState)) {
