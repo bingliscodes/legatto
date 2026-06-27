@@ -1,7 +1,7 @@
 from fastapi import UploadFile, APIRouter, status, Response
 from pathlib import Path
 
-from app.queue import redis_conn, task_queue
+from app.queue import redis_client, task_queue
 from app.tasks import stem_separator
 
 router = APIRouter(prefix="/tracks")
