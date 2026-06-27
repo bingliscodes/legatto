@@ -18,7 +18,7 @@ async def proccess_audio(audio_file: UploadFile):
 
     input_path = await save_file_to_disk(audio_file, job_dir)
     stems_path = job_dir / "stems"
-    stems_path.mkdir(parents=True, exists_ok=True)
+    stems_path.mkdir(parents=True, exist_ok=True)
 
     job = task_queue.enqueue(stem_separator, input_path, stems_path, job_id=track_id)
     return track_id
