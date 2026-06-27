@@ -22,7 +22,6 @@ function App() {
       "http://localhost:8000/tracks/b82a825b98df4d29969a1e422e24b6df/stems/other.wav",
     piano:
       "http://localhost:8000/tracks/b82a825b98df4d29969a1e422e24b6df/stems/piano.wav",
-    // ...all six
   };
   const handleLoadClick = () => {
     load(stems);

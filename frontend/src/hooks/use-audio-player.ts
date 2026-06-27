@@ -5,6 +5,7 @@ type Stems = Record<string, string>;
 
 export function useAudioPlayer() {
   const ctxRef = useRef<AudioContext | null>(null);
+  const [stemNames, setStemNames] = useState<string[]>([]);
 
   // Decoded audio + the persistent per-stem gain nodes. These are refs, not
   // state: they're mutable audio objects that must survive re-renders and
@@ -39,6 +40,8 @@ export function useAudioPlayer() {
         gainsRef.current.set(name, gain);
       }),
     );
+
+    setStemNames(Object.keys(stems));
   }
 
   // ── Synchronized playback ──
