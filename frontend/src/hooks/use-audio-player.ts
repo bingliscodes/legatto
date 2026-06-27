@@ -7,6 +7,7 @@ type StemUI = { volume: number; muted: boolean };
 export function useAudioPlayer() {
   const ctxRef = useRef<AudioContext | null>(null);
   const [stemState, setStemState] = useState<Record<string, StemUI>>({});
+  const [soloed, setSoloed] = useState<string | null>(null);
 
   // Decoded audio + the persistent per-stem gain nodes. These are refs, not
   // state: they're mutable audio objects that must survive re-renders and
@@ -44,7 +45,7 @@ export function useAudioPlayer() {
 
     const initial: Record<string, StemUI> = {};
     for (const name of Object.keys(stems))
-      initial[name] = { volume: 10, muted: false };
+      initial[name] = { volume: 100, muted: false };
     setStemState(initial);
   }
 
@@ -95,14 +96,25 @@ export function useAudioPlayer() {
   }
 
   function solo(name: string) {
-    for (const inst in gainsRef.current) {
+    for (const [inst, gain] of gainsRef.current) {
       if (inst !== name) {
-        inst.gain.value = 0;
+        gain.gain.value = 0;
       }
     }
   }
 
   // UI Controls
+  useEffect(() => {
+    for (const [name, ui] of Object.entries(stemState)) {
+      const effective = ui.muted
+        ? 0
+        : soloed && soloed !== name
+          ? 0
+          : ui.volume / 100;
+      setStemGain(name, effective);
+    }
+  });
+
   function setVolume(name: string, volume: number) {
     setStemGain(name, volume);
     setStemState((prev) => ({
@@ -118,7 +130,8 @@ export function useAudioPlayer() {
       return { ...prev, [name]: { ...prev[name], muted } };
     });
   }
-  // TODO (yours): mute(name) and solo(name), built on top of setStemGain.
+
+  function toggleSolo(name: string) {}
 
   // close the context when the component using this hook unmounts
   useEffect(() => {
@@ -135,6 +148,7 @@ export function useAudioPlayer() {
     mute,
     toggleMute,
     setVolume,
+    toggleSolo,
     stemState,
     isPlaying,
   };
