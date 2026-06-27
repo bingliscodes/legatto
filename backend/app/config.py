@@ -5,5 +5,5 @@ from dotenv import load_dotenv
 load_dotenv()
 
 STORAGE_ROOT = Path(os.getenv("STORAGE_DIR", "storage")).resolve()
-SHIFTS = 1
-OVERLAP = 0.25
+SHIFTS = 2
+OVERLAP = 0.5
