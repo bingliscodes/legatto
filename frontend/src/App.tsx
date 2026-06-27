@@ -31,6 +31,10 @@ function App() {
   const handlePlayClick = () => {
     play();
   };
+
+  const handleSetStemGainClick = () => {
+    setStemGain("guitar", 0);
+  };
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b">
@@ -66,6 +70,7 @@ function App() {
             */}
             <button onClick={handleLoadClick}>Load</button>
             <button onClick={handlePlayClick}>Play</button>
+            <button onClick={handleSetStemGainClick}>Set Stem Gain</button>
             <p className="text-sm text-muted-foreground">Player coming soon.</p>
           </CardContent>
         </Card>
