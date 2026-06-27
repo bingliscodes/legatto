@@ -1,11 +1,10 @@
-from fastapi import UploadFile, APIRouter, status, Response
-from pathlib import Path
+from fastapi import UploadFile, APIRouter
 from uuid import uuid4
+from pathlib import Path
 
 from app.queue import redis_client, task_queue
 from app.tasks import stem_separator
 from app.config import STORAGE_ROOT
-import os
 
 router = APIRouter(prefix="/tracks")
 
@@ -23,7 +22,7 @@ async def proccess_audio(audio_file: UploadFile):
     return track_id
 
 
-async def save_file_to_disk(file: UploadFile, job_dir) -> str:
+async def save_file_to_disk(file: UploadFile, job_dir) -> Path:
     contents = await file.read()
 
     destination_path = job_dir / file.filename
