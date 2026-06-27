@@ -1,5 +1,4 @@
 # the stem separator — the "work"
-from app.config import STORAGE_ROOT
 from pathlib import Path
 
 

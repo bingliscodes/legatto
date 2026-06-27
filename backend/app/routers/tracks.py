@@ -21,9 +21,7 @@ async def proccess_audio(audio_file: UploadFile):
     job_dir = STORAGE_ROOT / track_id
     job_dir.mkdir(parents=True, exist_ok=True)
 
-    job = task_queue.enqueue(
-        stem_separator, input_path, os.getenv("STORAGE_DIR"), job_id=track_id
-    )
+    job = task_queue.enqueue(stem_separator, input_path, job_dir, job_id=track_id)
     return track_id
 
 
