@@ -12,14 +12,14 @@ export function useAudioPlayer() {
 
   async function play(url: string) {
     const ctx = getContext();
-    await ctx.resume(); // in case it started suspended
-    // Make call for resource
-    const res = await fetch(url);
-    const arrayBuffer = await res.arrayBuffer();
-    ctx.decodeAudioData(arrayBuffer);
+    await ctx.resume();
+
+    const res = await fetch(url); // 1. download
+    const arrayBuffer = await res.arrayBuffer(); // 2. get raw encoded bytes
+    const audioBuffer = await ctx.decodeAudioData(arrayBuffer); // 3. decode to AudioBuffer
 
     const source = ctx.createBufferSource();
-    source.buffer = arrayBuffer;
+    source.buffer = audioBuffer; // Set buffer to the decoded value, not the raw bytes
     source.connect(ctx.destination);
     source.start();
     setIsPlaying(true);
