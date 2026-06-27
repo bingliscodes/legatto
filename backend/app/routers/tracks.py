@@ -12,11 +12,12 @@ router = APIRouter(prefix="/tracks")
 
 @router.post("/")
 async def proccess_audio(audio_file: UploadFile):
-    """Takes in an audio file, save to disk, drop the job in the queue, return job id"""
-    input_path = await save_file_to_disk(audio_file)
+    """Takes in an audio file, creates track id, initialize directory, save to disk, drop the job in the queue, return job id"""
     track_id = uuid4().hex
     job_dir = STORAGE_ROOT / track_id
     job_dir.mkdir(parents=True, exist_ok=True)
+
+    input_path = await save_file_to_disk(audio_file, job_dir)
 
     job = task_queue.enqueue(stem_separator, input_path, job_dir)
     return track_id
