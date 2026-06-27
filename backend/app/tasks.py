@@ -5,10 +5,12 @@ from demucs.apply import apply_model
 from demucs.audio import AudioFile, save_audio
 import torch
 
+from app.config import SHIFTS, OVERLAP
+
 model = None
 
 
-def get_model():
+def get_demucs_model():
     global model
     if model is None:
         model = get_model("htdemucs_6s")
@@ -19,6 +21,7 @@ def get_model():
 
 def stem_separator(input_path: str, output_directory: str):
     """Creates a new file for each instrument"""
+    model = get_demucs_model()
     wav = AudioFile(input_path).read(
         streams=0, samplerate=model.samplerate, channels=model.audio_channels
     )
@@ -26,7 +29,9 @@ def stem_separator(input_path: str, output_directory: str):
     wav = (wav - ref.mean()) / ref.std()  # demucs normalizes by the mix's mean/std
 
     with torch.no_grad():
-        sources = apply_model(model, wav[None], device="mps")[
+        sources = apply_model(
+            model, wav[None], device="mps", shifts=SHIFTS, overlap=OVERLAP
+        )[
             0
         ]  # wav[None] adds a batch dim
 
