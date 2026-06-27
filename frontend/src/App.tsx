@@ -1,13 +1,19 @@
-import { ModeToggle } from "@/components/mode-toggle"
+import { ModeToggle } from "@/components/mode-toggle";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 
 function App() {
+  const handleClick = () => {
+    const audioCtx: AudioContext = new AudioContext();
+    audioCtx.initAudio();
+
+    console.log("Button Clicked!");
+  };
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b">
@@ -41,12 +47,13 @@ function App() {
               2. poll GET /jobs/{id} until status === "finished"
               3. the Web Audio multitrack player (per-stem gain, synced playback)
             */}
+            <button onClick={handleClick}>Click me</button>
             <p className="text-sm text-muted-foreground">Player coming soon.</p>
           </CardContent>
         </Card>
       </main>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
