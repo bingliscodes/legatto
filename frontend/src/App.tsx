@@ -9,12 +9,27 @@ import {
 import { useAudioPlayer } from "@/hooks/use-audio-player";
 
 function App() {
-  const { play } = useAudioPlayer();
-  const handleClick = () => {
-    console.log("Button Clicked!");
-    play(
+  const { load, play, setStemGain } = useAudioPlayer();
+  const stems = {
+    guitar:
       "http://localhost:8000/tracks/b82a825b98df4d29969a1e422e24b6df/stems/guitar.wav",
-    );
+    drums:
+      "http://localhost:8000/tracks/b82a825b98df4d29969a1e422e24b6df/stems/drums.wav",
+    bass: "http://localhost:8000/tracks/b82a825b98df4d29969a1e422e24b6df/stems/bass.wav",
+    vocals:
+      "http://localhost:8000/tracks/b82a825b98df4d29969a1e422e24b6df/stems/vocals.wav",
+    other:
+      "http://localhost:8000/tracks/b82a825b98df4d29969a1e422e24b6df/stems/other.wav",
+    piano:
+      "http://localhost:8000/tracks/b82a825b98df4d29969a1e422e24b6df/stems/piano.wav",
+    // ...all six
+  };
+  const handleLoadClick = () => {
+    load(stems);
+  };
+
+  const handlePlayClick = () => {
+    play();
   };
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -49,7 +64,8 @@ function App() {
               2. poll GET /jobs/{id} until status === "finished"
               3. the Web Audio multitrack player (per-stem gain, synced playback)
             */}
-            <button onClick={handleClick}>Click me</button>
+            <button onClick={handleLoadClick}>Load</button>
+            <button onClick={handlePlayClick}>Play</button>
             <p className="text-sm text-muted-foreground">Player coming soon.</p>
           </CardContent>
         </Card>
