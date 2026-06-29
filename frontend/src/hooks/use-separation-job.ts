@@ -30,12 +30,9 @@ export function useSeparationJob() {
         const job = await getJob(jobId);
         setStatus(job.status);
 
-        if (job.status === "finished") {
-          setStems(job.stems);
+        if (job.status === "finished") setStems(job.stems);
+        if (job.status === "finished" || job.status === "failed")
           clearInterval(interval);
-        } else if (job.status === "failed") {
-          clearInterval(interval);
-        }
       } catch (err) {
         console.error("poll failed:", err);
         setStatus("error");
