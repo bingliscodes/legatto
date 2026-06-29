@@ -9,9 +9,8 @@ import {
 } from "@/components/ui/card";
 import { StemControl } from "@/components/stem-control";
 import { useAudioPlayer } from "@/hooks/use-audio-player";
+import { API_BASE } from "./lib/api";
 
-// Will be an env variable later
-const API_BASE = "http://localhost:8000";
 // Hardcoded for now. The next (and last) Slice 3 step replaces this with the
 // real flow: upload → POST /tracks → poll GET /jobs/{id} → load(stems from response).
 const TRACK_ID = "ba86ac1ea9704b29bea3a180b5e7a183";
