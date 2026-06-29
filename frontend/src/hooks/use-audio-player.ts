@@ -117,26 +117,23 @@ export function useAudioPlayer() {
   }
   // –– Set the playback buffers based on tempo ––
   useEffect(() => {
-    const interval = setInterval(async () => {
+    const timeout = setTimeout(async () => {
       try {
         const ctx = getContext();
         if (tempo == 1) {
           playbackBuffersRef.current = new Map(buffersRef.current);
-          clearInterval(interval);
         } else {
           for (const [name, buffer] of buffersRef.current) {
             const stretchedBuffer = stretchBuffer(ctx, buffer, tempo);
             playbackBuffersRef.current.set(name, stretchedBuffer);
           }
-          clearInterval(interval);
         }
       } catch (err) {
         console.error("audio stretch failed:", err);
-        clearInterval(interval);
       }
-    }, 1500);
+    }, 300);
 
-    return () => clearInterval(interval);
+    return () => clearTimeout(timeout);
   }, [tempo]);
 
   // Release the AudioContext on unmount
