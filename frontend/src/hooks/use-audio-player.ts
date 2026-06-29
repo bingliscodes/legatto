@@ -120,9 +120,10 @@ export function useAudioPlayer() {
     const timeout = setTimeout(() => {
       try {
         const ctx = getContext();
-        if (tempo == 1) {
+        if (tempo === 1) {
           playbackBuffersRef.current = new Map(buffersRef.current);
         } else {
+          playbackBuffersRef.current.clear();
           for (const [name, buffer] of buffersRef.current) {
             const stretchedBuffer = stretchBuffer(ctx, buffer, tempo);
             playbackBuffersRef.current.set(name, stretchedBuffer);
