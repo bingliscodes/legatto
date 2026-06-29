@@ -8,6 +8,7 @@ export function useAudioPlayer() {
   const ctxRef = useRef<AudioContext | null>(null);
   const [stemState, setStemState] = useState<Record<string, StemUI>>({});
   const [soloed, setSoloed] = useState<string | null>(null);
+  const [tempo, setTempo] = useState<Number>(1.0);
 
   // Decoded audio + the persistent per-stem gain nodes. These are refs, not
   // state: they're mutable audio objects that must survive re-renders and
@@ -127,6 +128,8 @@ export function useAudioPlayer() {
     toggleMute,
     setVolume,
     toggleSolo,
+    tempo,
+    setTempo,
     stemState,
     soloed,
     isPlaying,
