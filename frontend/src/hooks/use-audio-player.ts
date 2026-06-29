@@ -20,6 +20,7 @@ export function useAudioPlayer() {
   const startCtxTimeRef = useRef<number>(0);
   const startOffsetRef = useRef<number>(0);
   const playbackTempoRef = useRef<number>(1.0);
+  const isPlayingRef = useRef<boolean>(false);
 
   // The sources for the CURRENT playback, kept so we can stop them.
   const sourcesRef = useRef<AudioBufferSourceNode[]>([]);
