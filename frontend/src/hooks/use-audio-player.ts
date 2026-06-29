@@ -61,6 +61,13 @@ export function useAudioPlayer() {
   }
 
   // ── Synchronized playback ──
+  const currentPlayhead = (): number => {
+    const ctx = getContext();
+    return (
+      startOffsetRef.current +
+      (ctx.currentTime - startCtxTimeRef.current) * playbackTempoRef.current
+    );
+  };
   function play() {
     const ctx = getContext();
     pause_playback();
@@ -90,11 +97,7 @@ export function useAudioPlayer() {
     // Compute where to start in stretched buffer as offset = playhead / tempo
     if (!isPlayingRef.current) return;
 
-    const ctx = getContext();
-
-    const playhead =
-      startOffsetRef.current +
-      (ctx.currentTime - startCtxTimeRef.current) * playbackTempoRef.current;
+    const playhead = currentPlayhead();
     pause_playback();
     setIsPlaying(false);
     isPlayingRef.current = false;
@@ -160,10 +163,7 @@ export function useAudioPlayer() {
         }
       }
       if (isPlayingRef.current) {
-        const playhead =
-          startOffsetRef.current +
-          (ctx.currentTime - startCtxTimeRef.current) *
-            playbackTempoRef.current;
+        const playhead = currentPlayhead();
         startOffsetRef.current = playhead;
         play();
       }
