@@ -75,7 +75,7 @@ export function useAudioPlayer() {
       const source = ctx.createBufferSource();
       source.buffer = buffer;
       source.connect(gain);
-      source.start(when, startOffsetRef.current);
+      source.start(when, startOffsetRef.current / tempo);
       sources.push(source);
     }
 
@@ -92,8 +92,7 @@ export function useAudioPlayer() {
     const playhead =
       startOffsetRef.current +
       (ctx.currentTime - startCtxTimeRef.current) * playbackTempoRef.current;
-    const offset = playhead / playbackTempoRef.current;
-    startOffsetRef.current = offset;
+    startOffsetRef.current = playhead;
   }
 
   function stop() {
