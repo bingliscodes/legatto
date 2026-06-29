@@ -17,6 +17,10 @@ export function useAudioPlayer() {
   const buffersRef = useRef<Map<string, AudioBuffer>>(new Map());
   const playbackBuffersRef = useRef<Map<string, AudioBuffer>>(new Map());
   const gainsRef = useRef<Map<string, GainNode>>(new Map());
+  const startCtxTimeRef = useRef<number>(0);
+  const startOffsetRef = useRef<number>(0);
+  const playbackTempoRef = useRef<number>(1.0);
+
   // The sources for the CURRENT playback, kept so we can stop them.
   const sourcesRef = useRef<AudioBufferSourceNode[]>([]);
 
@@ -61,6 +65,7 @@ export function useAudioPlayer() {
     stop();
 
     const when = ctx.currentTime + 0.1; // ONE shared start time → sample-accurate sync
+    startCtxTimeRef.current = when;
     const sources: AudioBufferSourceNode[] = [];
 
     for (const [name, buffer] of playbackBuffersRef.current) {
@@ -70,18 +75,32 @@ export function useAudioPlayer() {
       const source = ctx.createBufferSource();
       source.buffer = buffer;
       source.connect(gain);
-      source.start(when);
+      source.start(when, startOffsetRef.current);
       sources.push(source);
     }
 
     sourcesRef.current = sources;
     setIsPlaying(true);
+    playbackTempoRef.current = tempo;
+  }
+
+  function pause() {
+    // Compute where to start in stretched buffer as offset = playhead / tempo
+    const ctx = getContext();
+    stop();
+
+    const playhead =
+      startOffsetRef.current +
+      (ctx.currentTime - startCtxTimeRef.current) * playbackTempoRef.current;
+    const offset = playhead / playbackTempoRef.current;
+    startOffsetRef.current = offset;
   }
 
   function stop() {
     sourcesRef.current.forEach((s) => {
       try {
         s.stop();
+        startOffsetRef.current = 0;
       } catch {
         /* already stopped — fine */
       }
