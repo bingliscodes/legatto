@@ -82,12 +82,13 @@ export function useAudioPlayer() {
 
     sourcesRef.current = sources;
     setIsPlaying(true);
+    isPlayingRef.current = true;
     playbackTempoRef.current = tempo;
   }
 
   function pause() {
     // Compute where to start in stretched buffer as offset = playhead / tempo
-    if (!isPlaying) return;
+    if (!isPlayingRef.current) return;
 
     const ctx = getContext();
 
@@ -95,6 +96,8 @@ export function useAudioPlayer() {
       startOffsetRef.current +
       (ctx.currentTime - startCtxTimeRef.current) * playbackTempoRef.current;
     pause_playback();
+    setIsPlaying(false);
+    isPlayingRef.current = true;
     startOffsetRef.current = playhead;
   }
 
@@ -103,6 +106,7 @@ export function useAudioPlayer() {
     startOffsetRef.current = 0;
     sourcesRef.current = [];
     setIsPlaying(false);
+    isPlayingRef.current = true;
   }
 
   function pause_playback() {
@@ -145,6 +149,7 @@ export function useAudioPlayer() {
   useEffect(() => {
     const timeout = setTimeout(() => {
       const ctx = getContext();
+
       if (tempo === 1) {
         playbackBuffersRef.current = new Map(buffersRef.current);
       } else {
