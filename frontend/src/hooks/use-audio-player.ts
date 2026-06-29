@@ -33,6 +33,7 @@ export function useAudioPlayer() {
     stop();
     buffersRef.current.clear();
     gainsRef.current.clear();
+    setTempo(1);
 
     await Promise.all(
       Object.entries(stems).map(async ([name, url]) => {
@@ -51,6 +52,7 @@ export function useAudioPlayer() {
     for (const name of Object.keys(stems))
       initial[name] = { volume: 100, muted: false };
     setStemState(initial);
+    playbackBuffersRef.current = new Map(buffersRef.current);
   }
 
   // ── Synchronized playback ──
