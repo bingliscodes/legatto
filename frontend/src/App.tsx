@@ -94,7 +94,7 @@ function App() {
                 Stop
               </Button>
               <Button
-                onClick={() => (isLoopingRef.current = !isLoopingRef.current)}
+                onClick={() => setLoop((l) => ({ ...l, active: !l.active }))}
                 disabled={!isPlaying}
               >
                 Toggle Loop

@@ -70,10 +70,13 @@ export function useAudioPlayer() {
   const currentPlayhead = (): number => {
     // Gets the position in the original un-stretched song timeline
     const ctx = getContext();
-    return (
+    const rawPosition =
       startOffsetRef.current +
-      (ctx.currentTime - startCtxTimeRef.current) * playbackTempoRef.current
-    );
+      (ctx.currentTime - startCtxTimeRef.current) * playbackTempoRef.current;
+    const { active, start: A, end: B } = loopRef.current;
+    if (!active || B <= A) return rawPosition; // Guard against no loop or invalid playback position
+    const loopLength = B - A;
+    return A + ((((rawPosition - A) % loopLength) + loopLength) % loopLength);
   };
   function play() {
     const ctx = getContext();
