@@ -28,6 +28,7 @@ function App() {
     stemState,
     soloed,
     isPlaying,
+    isLoopingRef,
   } = useAudioPlayer();
   const { upload, status, stems } = useSeparationJob();
 
@@ -90,6 +91,12 @@ function App() {
               </Button>
               <Button variant="outline" onClick={stop} disabled={!isPlaying}>
                 Stop
+              </Button>
+              <Button
+                onClick={() => (isLoopingRef.current = !isLoopingRef.current)}
+                disabled={!isPlaying}
+              >
+                Toggle Loop
               </Button>
               <Slider
                 value={[tempo]}

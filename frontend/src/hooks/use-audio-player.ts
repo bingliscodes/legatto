@@ -21,11 +21,15 @@ export function useAudioPlayer() {
   const startOffsetRef = useRef<number>(0);
   const playbackTempoRef = useRef<number>(1.0);
   const isPlayingRef = useRef<boolean>(false);
+  const loopStartRef = useRef<number>(0);
+  const loopEndRef = useRef<number>(5);
+  const isLoopingRef = useRef<boolean>(false);
 
   // The sources for the CURRENT playback, kept so we can stop them.
   const sourcesRef = useRef<AudioBufferSourceNode[]>([]);
 
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLooping, setIsLooping] = useState(false);
 
   function getContext() {
     if (!ctxRef.current) ctxRef.current = new AudioContext();
@@ -85,6 +89,11 @@ export function useAudioPlayer() {
       source.buffer = buffer;
       source.connect(gain);
       // seconds into the stretched buffer = currentPlayhead() / tempo
+      if (isLoopingRef.current) {
+        source.loop = true;
+        source.loopStart = loopStartRef.current / tempo;
+        source.loopEnd = loopEndRef.current / tempo;
+      }
       source.start(when, startOffsetRef.current / tempo);
       sources.push(source);
     }
@@ -195,5 +204,8 @@ export function useAudioPlayer() {
     stemState,
     soloed,
     isPlaying,
+    isLooping,
+    setIsLooping,
+    isLoopingRef,
   };
 }
