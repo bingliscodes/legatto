@@ -96,10 +96,10 @@ export function useAudioPlayer() {
   }
 
   function stop() {
+    startOffsetRef.current = 0;
     sourcesRef.current.forEach((s) => {
       try {
         s.stop();
-        startOffsetRef.current = 0;
       } catch {
         /* already stopped — fine */
       }
