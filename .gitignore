@@ -19,5 +19,7 @@ storage/
 # macOS
 .DS_Store
 
+# Audio and ableton files
 *.mp3
 *.wav
+*.asd

@@ -9,13 +9,10 @@ export type JobStatus = {
 };
 
 export async function uploadTrack(file: File): Promise<string> {
-  // POST /tracks/
-  try {
-    const res = await axios.post<string>(`${API_BASE}/tracks/`, { file });
-    return res.data;
-  } catch (err) {
-    // Handle axios error
-  }
+  const formData = new FormData();
+  formData.append("audio_file", file);
+  const res = await axios.post<string>(`${API_BASE}/tracks/`, formData);
+  return res.data;
 }
 
 export async function getJob(id: string): Promise<JobStatus> {
