@@ -118,19 +118,15 @@ export function useAudioPlayer() {
   // –– Set the playback buffers based on tempo ––
   useEffect(() => {
     const timeout = setTimeout(() => {
-      try {
-        const ctx = getContext();
-        if (tempo === 1) {
-          playbackBuffersRef.current = new Map(buffersRef.current);
-        } else {
-          playbackBuffersRef.current.clear();
-          for (const [name, buffer] of buffersRef.current) {
-            const stretchedBuffer = stretchBuffer(ctx, buffer, tempo);
-            playbackBuffersRef.current.set(name, stretchedBuffer);
-          }
+      const ctx = getContext();
+      if (tempo === 1) {
+        playbackBuffersRef.current = new Map(buffersRef.current);
+      } else {
+        playbackBuffersRef.current.clear();
+        for (const [name, buffer] of buffersRef.current) {
+          const stretchedBuffer = stretchBuffer(ctx, buffer, tempo);
+          playbackBuffersRef.current.set(name, stretchedBuffer);
         }
-      } catch (err) {
-        console.error("audio stretch failed:", err);
       }
     }, 300);
 
