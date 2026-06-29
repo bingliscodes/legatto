@@ -33,6 +33,8 @@ function App() {
       Object.entries(stems).map(([name, url]) => [name, `${API_BASE}${url}`]),
     );
     load(absolute_paths);
+    // Intentionally runs only when `stems` changes; `load` is stable in behavior.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stems]);
 
   const stemNames = Object.keys(stemState);
