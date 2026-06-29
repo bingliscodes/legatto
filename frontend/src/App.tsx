@@ -13,11 +13,6 @@ import { useAudioPlayer } from "@/hooks/use-audio-player";
 import { useSeparationJob } from "./hooks/use-separation-job";
 import { API_BASE } from "./lib/api";
 
-// Hardcoded for now. The next (and last) Slice 3 step replaces this with the
-// real flow: upload → POST /tracks → poll GET /jobs/{id} → load(stems from response).
-const TRACK_ID = "ba86ac1ea9704b29bea3a180b5e7a183";
-const STEM_NAMES = ["guitar", "drums", "bass", "vocals", "other", "piano"];
-
 function App() {
   const {
     load,
@@ -34,10 +29,10 @@ function App() {
 
   useEffect(() => {
     if (!stems) return;
-    const absolute = Object.fromEntries(
+    const absolute_paths = Object.fromEntries(
       Object.entries(stems).map(([name, url]) => [name, `${API_BASE}${url}`]),
     );
-    load(absolute);
+    load(absolute_paths);
   }, [stems]);
 
   const stemNames = Object.keys(stemState);
