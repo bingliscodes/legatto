@@ -1,4 +1,3 @@
-// @ts-ignore on the import if TS complains about missing types)
 import { SoundTouch, SimpleFilter, WebAudioBufferSource } from "soundtouchjs";
 
 export function stretchBuffer(
