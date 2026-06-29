@@ -10,6 +10,8 @@ export function useAudioPlayer() {
   const [stemState, setStemState] = useState<Record<string, StemUI>>({});
   const [soloed, setSoloed] = useState<string | null>(null);
   const [tempo, setTempo] = useState<number>(1.0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [loop, setLoop] = useState({ active: false, start: 0, end: 5 });
 
   // Decoded audio + the persistent per-stem gain nodes. These are refs, not
   // state: they're mutable audio objects that must survive re-renders and
@@ -20,16 +22,16 @@ export function useAudioPlayer() {
   const startCtxTimeRef = useRef<number>(0);
   const startOffsetRef = useRef<number>(0);
   const playbackTempoRef = useRef<number>(1.0);
-  const isPlayingRef = useRef<boolean>(false);
-  const loopStartRef = useRef<number>(0);
-  const loopEndRef = useRef<number>(5);
-  const isLoopingRef = useRef<boolean>(false);
+  const isPlayingRef = useRef<boolean>(isPlaying);
+  const loopRef = useRef(loop);
+
+  // Keep loop refs in sync with loop state
+  useEffect(() => {
+    loopRef.current = loop;
+  }, [loop]);
 
   // The sources for the CURRENT playback, kept so we can stop them.
   const sourcesRef = useRef<AudioBufferSourceNode[]>([]);
-
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isLooping, setIsLooping] = useState(false);
 
   function getContext() {
     if (!ctxRef.current) ctxRef.current = new AudioContext();
@@ -206,6 +208,5 @@ export function useAudioPlayer() {
     isPlaying,
     isLooping,
     setIsLooping,
-    isLoopingRef,
   };
 }
