@@ -62,6 +62,7 @@ export function useAudioPlayer() {
 
   // ── Synchronized playback ──
   const currentPlayhead = (): number => {
+    // Gets the position in the original un-stretched song timeline
     const ctx = getContext();
     return (
       startOffsetRef.current +
@@ -83,6 +84,7 @@ export function useAudioPlayer() {
       const source = ctx.createBufferSource();
       source.buffer = buffer;
       source.connect(gain);
+      // seconds into the stretched buffer = currentPlayhead() / tempo
       source.start(when, startOffsetRef.current / tempo);
       sources.push(source);
     }
@@ -101,6 +103,7 @@ export function useAudioPlayer() {
     pause_playback();
     setIsPlaying(false);
     isPlayingRef.current = false;
+    // Store the position in original timeline for resuming.
     startOffsetRef.current = playhead;
   }
 
