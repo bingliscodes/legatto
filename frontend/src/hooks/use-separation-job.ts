@@ -12,8 +12,13 @@ export function useSeparationJob() {
   async function upload(file: File) {
     setStatus("uploading");
     setStems(null);
-    const id = await uploadTrack(file);
-    setJobId(id);
+    try {
+      const id = await uploadTrack(file);
+      setJobId(id);
+    } catch (err) {
+      console.error("upload failed:", err);
+      setStatus("error");
+    }
   }
 
   // Poll while there's a job that isn't done yet.
@@ -21,13 +26,19 @@ export function useSeparationJob() {
     if (!jobId) return;
 
     const interval = setInterval(async () => {
-      const job = await getJob(jobId);
-      setStatus(job.status);
+      try {
+        const job = await getJob(jobId);
+        setStatus(job.status);
 
-      if (job.status === "finished") {
-        setStems(job.stems);
-        clearInterval(interval);
-      } else if (job.status === "failed") {
+        if (job.status === "finished") {
+          setStems(job.stems);
+          clearInterval(interval);
+        } else if (job.status === "failed") {
+          clearInterval(interval);
+        }
+      } catch (err) {
+        console.error("poll failed:", err);
+        setStatus("error");
         clearInterval(interval);
       }
     }, 1500);
