@@ -65,9 +65,14 @@ function App() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex gap-2">
-              <Button variant="secondary" onClick={() => load(stems)}>
-                Load stems
-              </Button>
+              <input
+                type="file"
+                accept="audio/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  console.log("picked:", file);
+                }}
+              />
               <Button onClick={play} disabled={!loaded}>
                 Play
               </Button>
