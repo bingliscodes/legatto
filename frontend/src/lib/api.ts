@@ -11,7 +11,16 @@ export type JobStatus = {
 export async function uploadTrack(file: File): Promise<string> {
   // POST /tracks/
   try {
-    const res = await axios.post<JobStatus>(`${API_BASE}/tracks`, { file });
+    const res = await axios.post<string>(`${API_BASE}/tracks`, { file });
+    return res.data;
+  } catch (err) {
+    // Handle axios error
+  }
+}
+
+export async function getJob(id: string): Promise<JobStatus> {
+  try {
+    const res = await axios.get<JobStatus>(`${API_BASE}/jobs/${id}`);
     return res.data;
   } catch (err) {
     // Handle axios error
