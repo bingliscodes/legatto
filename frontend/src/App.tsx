@@ -12,6 +12,21 @@ import { StemControl } from "@/components/stem-control";
 import { useAudioPlayer } from "@/hooks/use-audio-player";
 import { useSeparationJob } from "./hooks/use-separation-job";
 import { API_BASE } from "./lib/api";
+import { stretchBuffer } from "./lib/stretch";
+
+async function testStretch() {
+  const ctx = new AudioContext();
+  const res = await fetch(
+    "http://localhost:8000/tracks/6a18b07f1a424e6e80317d86018ce625/stems/guitar.wav",
+  );
+  const audioBuffer = await ctx.decodeAudioData(await res.arrayBuffer());
+
+  const stretchedBuffer = stretchBuffer(ctx, audioBuffer, 0.8);
+  const source = ctx.createBufferSource();
+  source.buffer = stretchedBuffer;
+  source.connect(ctx.destination);
+  source.start();
+}
 
 function App() {
   const {
@@ -37,6 +52,9 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stems]);
 
+  const stretchTest = () => {
+    testStretch();
+  };
   const stemNames = Object.keys(stemState);
   const loaded = stemNames.length > 0;
 
@@ -84,6 +102,7 @@ function App() {
               <Button variant="outline" onClick={stop} disabled={!isPlaying}>
                 Stop
               </Button>
+              <Button onClick={stretchTest}>Stretch test</Button>
             </div>
 
             {loaded ? (
