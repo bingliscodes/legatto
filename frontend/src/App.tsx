@@ -28,7 +28,8 @@ function App() {
     stemState,
     soloed,
     isPlaying,
-    isLoopingRef,
+    loop,
+    setLoop,
   } = useAudioPlayer();
   const { upload, status, stems } = useSeparationJob();
 

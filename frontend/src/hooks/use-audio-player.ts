@@ -91,10 +91,10 @@ export function useAudioPlayer() {
       source.buffer = buffer;
       source.connect(gain);
       // seconds into the stretched buffer = currentPlayhead() / tempo
-      if (isLoopingRef.current) {
+      if (loopRef.current.active) {
         source.loop = true;
-        source.loopStart = loopStartRef.current / tempo;
-        source.loopEnd = loopEndRef.current / tempo;
+        source.loopStart = loopRef.current.start / tempo;
+        source.loopEnd = loopRef.current.end / tempo;
       }
       source.start(when, startOffsetRef.current / tempo);
       sources.push(source);
@@ -206,7 +206,7 @@ export function useAudioPlayer() {
     stemState,
     soloed,
     isPlaying,
-    isLooping,
-    setIsLooping,
+    loop,
+    setLoop,
   };
 }
