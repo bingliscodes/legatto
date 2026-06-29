@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from "react";
+import { stretchBuffer } from "@/lib/stretch";
 
 // stem name -> URL, matching the `stems` dict returned by GET /jobs/{id}
 type Stems = Record<string, string>;
@@ -8,12 +9,13 @@ export function useAudioPlayer() {
   const ctxRef = useRef<AudioContext | null>(null);
   const [stemState, setStemState] = useState<Record<string, StemUI>>({});
   const [soloed, setSoloed] = useState<string | null>(null);
-  const [tempo, setTempo] = useState<Number>(1.0);
+  const [tempo, setTempo] = useState<number>(1.0);
 
   // Decoded audio + the persistent per-stem gain nodes. These are refs, not
   // state: they're mutable audio objects that must survive re-renders and
   // must NOT trigger one when they change.
   const buffersRef = useRef<Map<string, AudioBuffer>>(new Map());
+  const playbackBuffersRef = useRef<Map<string, AudioBuffer>>(new Map());
   const gainsRef = useRef<Map<string, GainNode>>(new Map());
   // The sources for the CURRENT playback, kept so we can stop them.
   const sourcesRef = useRef<AudioBufferSourceNode[]>([]);
@@ -113,6 +115,30 @@ export function useAudioPlayer() {
   function toggleSolo(name: string) {
     setSoloed((prev) => (prev === name ? null : name)); // click again to un-solo
   }
+  // –– Set the playback buffers based on tempo ––
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const ctx = getContext();
+        if (tempo == 1) {
+          playbackBuffersRef.current = buffersRef.current;
+          clearInterval(interval);
+        } else {
+          for (const [name, buffer] of buffersRef.current) {
+            const stretchedBuffer = stretchBuffer(ctx, buffer, tempo);
+            playbackBuffersRef.current.set(name, stretchedBuffer);
+          }
+          clearInterval(interval);
+        }
+      } catch (err) {
+        console.error("audio stretch failed:", err);
+        clearInterval(interval);
+      }
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, [tempo]);
 
   // Release the AudioContext on unmount
   useEffect(() => {
