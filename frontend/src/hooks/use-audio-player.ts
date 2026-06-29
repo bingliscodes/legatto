@@ -76,11 +76,16 @@ export function useAudioPlayer() {
     const { active, start: A, end: B } = loopRef.current;
     if (!active || B <= A) return rawPosition; // Guard against no loop or invalid playback position
     const loopLength = B - A;
-    return A + ((((rawPosition - A) % loopLength) + loopLength) % loopLength);
+    return A + ((rawPosition - A) % loopLength);
   };
   function play() {
     const ctx = getContext();
     pause_playback();
+
+    const { active, start: A, end: B } = loopRef.current;
+    if (active && (startOffsetRef.current < A || startOffsetRef.current >= B)) {
+      startOffsetRef.current = A;
+    }
 
     const when = ctx.currentTime + 0.1; // ONE shared start time → sample-accurate sync
     startCtxTimeRef.current = when;
@@ -94,10 +99,10 @@ export function useAudioPlayer() {
       source.buffer = buffer;
       source.connect(gain);
       // seconds into the stretched buffer = currentPlayhead() / tempo
-      if (loopRef.current.active) {
+      if (active) {
         source.loop = true;
-        source.loopStart = loopRef.current.start / tempo;
-        source.loopEnd = loopRef.current.end / tempo;
+        source.loopStart = A / tempo;
+        source.loopEnd = B / tempo;
       }
       source.start(when, startOffsetRef.current / tempo);
       sources.push(source);
