@@ -61,7 +61,7 @@ export function useAudioPlayer() {
     const when = ctx.currentTime + 0.1; // ONE shared start time → sample-accurate sync
     const sources: AudioBufferSourceNode[] = [];
 
-    for (const [name, buffer] of buffersRef.current) {
+    for (const [name, buffer] of playbackBuffersRef.current) {
       const gain = gainsRef.current.get(name);
       if (!gain) continue;
 
