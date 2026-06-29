@@ -117,7 +117,7 @@ export function useAudioPlayer() {
   }
   // –– Set the playback buffers based on tempo ––
   useEffect(() => {
-    const timeout = setTimeout(async () => {
+    const timeout = setTimeout(() => {
       try {
         const ctx = getContext();
         if (tempo == 1) {
