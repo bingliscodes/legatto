@@ -86,12 +86,14 @@ export function useAudioPlayer() {
 
   function pause() {
     // Compute where to start in stretched buffer as offset = playhead / tempo
+    if (!isPlaying) return;
+
     const ctx = getContext();
-    stop();
 
     const playhead =
       startOffsetRef.current +
       (ctx.currentTime - startCtxTimeRef.current) * playbackTempoRef.current;
+    stop();
     startOffsetRef.current = playhead;
   }
 
