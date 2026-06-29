@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,18 +10,13 @@ import {
 } from "@/components/ui/card";
 import { StemControl } from "@/components/stem-control";
 import { useAudioPlayer } from "@/hooks/use-audio-player";
+import { useSeparationJob } from "./hooks/use-separation-job";
 import { API_BASE } from "./lib/api";
 
 // Hardcoded for now. The next (and last) Slice 3 step replaces this with the
 // real flow: upload → POST /tracks → poll GET /jobs/{id} → load(stems from response).
 const TRACK_ID = "ba86ac1ea9704b29bea3a180b5e7a183";
 const STEM_NAMES = ["guitar", "drums", "bass", "vocals", "other", "piano"];
-const stems = Object.fromEntries(
-  STEM_NAMES.map((name) => [
-    name,
-    `${API_BASE}/tracks/${TRACK_ID}/stems/${name}.wav`,
-  ]),
-);
 
 function App() {
   const {
@@ -34,6 +30,15 @@ function App() {
     soloed,
     isPlaying,
   } = useAudioPlayer();
+  const { upload, status, stems } = useSeparationJob();
+
+  useEffect(() => {
+    if (!stems) return;
+    const absolute = Object.fromEntries(
+      Object.entries(stems).map(([name, url]) => [name, `${API_BASE}${url}`]),
+    );
+    load(absolute);
+  }, [stems]);
 
   const stemNames = Object.keys(stemState);
   const loaded = stemNames.length > 0;
@@ -64,13 +69,16 @@ function App() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            <p className="text-sm text-muted-foreground">{status}</p>
             <div className="flex gap-2">
               <input
                 type="file"
                 accept="audio/*"
-                onChange={(e) => {
+                onChange={async (e) => {
                   const file = e.target.files?.[0];
-                  console.log("picked:", file);
+                  if (!file) return;
+
+                  await upload(file);
                 }}
               />
               <Button onClick={play} disabled={!loaded}>

@@ -16,10 +16,6 @@ export async function uploadTrack(file: File): Promise<string> {
 }
 
 export async function getJob(id: string): Promise<JobStatus> {
-  try {
-    const res = await axios.get<JobStatus>(`${API_BASE}/jobs/${id}`);
-    return res.data;
-  } catch (err) {
-    // Handle axios error
-  }
+  const res = await axios.get<JobStatus>(`${API_BASE}/jobs/${id}`);
+  return res.data;
 }
