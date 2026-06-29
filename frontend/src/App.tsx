@@ -12,7 +12,7 @@ import { useAudioPlayer } from "@/hooks/use-audio-player";
 
 // Hardcoded for now. The next (and last) Slice 3 step replaces this with the
 // real flow: upload → POST /tracks → poll GET /jobs/{id} → load(stems from response).
-const TRACK_ID = "b82a825b98df4d29969a1e422e24b6df";
+const TRACK_ID = "ba86ac1ea9704b29bea3a180b5e7a183";
 const STEM_NAMES = ["guitar", "drums", "bass", "vocals", "other", "piano"];
 const stems = Object.fromEntries(
   STEM_NAMES.map((name) => [

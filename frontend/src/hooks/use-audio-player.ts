@@ -112,6 +112,7 @@ export function useAudioPlayer() {
     setSoloed((prev) => (prev === name ? null : name)); // click again to un-solo
   }
 
+  // Release the AudioContext on unmount
   useEffect(() => {
     return () => {
       ctxRef.current?.close();
