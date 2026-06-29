@@ -62,7 +62,7 @@ export function useAudioPlayer() {
   // ── Synchronized playback ──
   function play() {
     const ctx = getContext();
-    stop();
+    pause_playback();
 
     const when = ctx.currentTime + 0.1; // ONE shared start time → sample-accurate sync
     startCtxTimeRef.current = when;
@@ -93,12 +93,18 @@ export function useAudioPlayer() {
     const playhead =
       startOffsetRef.current +
       (ctx.currentTime - startCtxTimeRef.current) * playbackTempoRef.current;
-    stop();
+    pause_playback();
     startOffsetRef.current = playhead;
   }
 
   function stop() {
+    pause_playback();
     startOffsetRef.current = 0;
+    sourcesRef.current = [];
+    setIsPlaying(false);
+  }
+
+  function pause_playback() {
     sourcesRef.current.forEach((s) => {
       try {
         s.stop();
@@ -106,10 +112,7 @@ export function useAudioPlayer() {
         /* already stopped — fine */
       }
     });
-    sourcesRef.current = [];
-    setIsPlaying(false);
   }
-
   // ── Sync the audio graph to state ──
   // The gains are a projection of stemState/soloed: whenever either changes,
   // recompute every stem's effective gain and apply it. Handlers stay pure.
@@ -165,6 +168,7 @@ export function useAudioPlayer() {
   return {
     load,
     play,
+    pause,
     stop,
     toggleMute,
     setVolume,

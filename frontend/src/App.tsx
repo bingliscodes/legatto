@@ -18,6 +18,7 @@ function App() {
   const {
     load,
     play,
+    pause,
     stop,
     toggleMute,
     toggleSolo,
@@ -83,6 +84,9 @@ function App() {
               />
               <Button onClick={play} disabled={!loaded}>
                 Play
+              </Button>
+              <Button onClick={pause} disabled={!loaded}>
+                Pause
               </Button>
               <Button variant="outline" onClick={stop} disabled={!isPlaying}>
                 Stop
