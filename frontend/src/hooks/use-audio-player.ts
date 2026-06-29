@@ -22,6 +22,11 @@ export function useAudioPlayer() {
   const startCtxTimeRef = useRef<number>(0);
   const startOffsetRef = useRef<number>(0);
   const playbackTempoRef = useRef<number>(1.0);
+  // The region the LIVE sources are actually looping under — snapshotted in play(),
+  // NOT the latest UI selection (that's loopRef). currentPlayhead() wraps with this
+  // so "where am I?" reflects what's sounding, not what was just dialed in.
+  // (Same split as playbackTempoRef vs tempo.) Init to `loop` so it has the right shape.
+  const playbackLoopRef = useRef(loop);
   const isPlayingRef = useRef<boolean>(isPlaying);
   const loopRef = useRef(loop);
 
@@ -73,7 +78,10 @@ export function useAudioPlayer() {
     const rawPosition =
       startOffsetRef.current +
       (ctx.currentTime - startCtxTimeRef.current) * playbackTempoRef.current;
-    const { active, start: A, end: B } = loopRef.current;
+    // Wrap with what's SOUNDING (playbackLoopRef), not the latest selection (loopRef):
+    // on a mid-loop change the sync effect updates loopRef before we capture here, so
+    // using it would lose the real position (e.g. toggling loop off would jump forward).
+    const { active, start: A, end: B } = playbackLoopRef.current;
     if (!active || B <= A) return rawPosition; // Guard against no loop or invalid playback position
     const loopLength = B - A;
     return A + ((rawPosition - A) % loopLength);
@@ -119,6 +127,8 @@ export function useAudioPlayer() {
     setIsPlaying(true);
     isPlayingRef.current = true;
     playbackTempoRef.current = tempo;
+    // Snapshot the region these sources were started with — now "what's sounding".
+    playbackLoopRef.current = { active, start: A, end: B };
   }
 
   function pause() {
@@ -129,6 +139,7 @@ export function useAudioPlayer() {
     pause_playback();
     setIsPlaying(false);
     isPlayingRef.current = false;
+
     // Store the position in original timeline for resuming.
     startOffsetRef.current = playhead;
   }
