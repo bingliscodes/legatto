@@ -81,8 +81,7 @@ export function useAudioPlayer() {
 
   const restartFromCurrentPosition = (): void => {
     // Captures the current position and resumes playback in place.
-    const playhead = currentPlayhead();
-    startOffsetRef.current = playhead;
+    startOffsetRef.current = currentPlayhead();
     play();
   };
 
