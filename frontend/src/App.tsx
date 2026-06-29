@@ -101,7 +101,7 @@ function App() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Click “Load stems” to begin.
+                Click "Choose file" to begin.
               </p>
             )}
           </CardContent>

@@ -27,6 +27,7 @@ export function useAudioPlayer() {
   // ── Decode every stem ONCE, and build one gain node per stem ──
   async function load(stems: Stems) {
     const ctx = getContext();
+    stop();
     buffersRef.current.clear();
     gainsRef.current.clear();
 
