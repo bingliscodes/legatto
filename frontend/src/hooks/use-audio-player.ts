@@ -116,13 +116,12 @@ export function useAudioPlayer() {
     setSoloed((prev) => (prev === name ? null : name)); // click again to un-solo
   }
   // –– Set the playback buffers based on tempo ––
-
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
         const ctx = getContext();
         if (tempo == 1) {
-          playbackBuffersRef.current = buffersRef.current;
+          playbackBuffersRef.current = new Map(buffersRef.current);
           clearInterval(interval);
         } else {
           for (const [name, buffer] of buffersRef.current) {
