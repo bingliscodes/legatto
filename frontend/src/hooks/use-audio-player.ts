@@ -78,6 +78,14 @@ export function useAudioPlayer() {
     const loopLength = B - A;
     return A + ((rawPosition - A) % loopLength);
   };
+
+  const restartFromCurrentPosition = (): void => {
+    // Captures the current position and resumes playback in place.
+    const playhead = currentPlayhead();
+    startOffsetRef.current = playhead;
+    play();
+  };
+
   function play() {
     const ctx = getContext();
     pause_playback();
@@ -185,14 +193,19 @@ export function useAudioPlayer() {
         }
       }
       if (isPlayingRef.current) {
-        const playhead = currentPlayhead();
-        startOffsetRef.current = playhead;
-        play();
+        restartFromCurrentPosition();
       }
     }, 300);
 
     return () => clearTimeout(timeout);
   }, [tempo]);
+
+  // –– Updating loop restarts audio from correct position
+  useEffect(() => {
+    if (isPlayingRef.current) {
+      restartFromCurrentPosition();
+    }
+  }, [loop]);
 
   // Release the AudioContext on unmount
   useEffect(() => {
