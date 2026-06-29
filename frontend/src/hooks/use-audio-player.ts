@@ -97,7 +97,7 @@ export function useAudioPlayer() {
       (ctx.currentTime - startCtxTimeRef.current) * playbackTempoRef.current;
     pause_playback();
     setIsPlaying(false);
-    isPlayingRef.current = true;
+    isPlayingRef.current = false;
     startOffsetRef.current = playhead;
   }
 
@@ -106,7 +106,7 @@ export function useAudioPlayer() {
     startOffsetRef.current = 0;
     sourcesRef.current = [];
     setIsPlaying(false);
-    isPlayingRef.current = true;
+    isPlayingRef.current = false;
   }
 
   function pause_playback() {
@@ -158,6 +158,14 @@ export function useAudioPlayer() {
           const stretchedBuffer = stretchBuffer(ctx, buffer, tempo);
           playbackBuffersRef.current.set(name, stretchedBuffer);
         }
+      }
+      if (isPlayingRef.current) {
+        const playhead =
+          startOffsetRef.current +
+          (ctx.currentTime - startCtxTimeRef.current) *
+            playbackTempoRef.current;
+        startOffsetRef.current = playhead;
+        play();
       }
     }, 300);
 
