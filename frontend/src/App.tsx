@@ -97,6 +97,9 @@ function App() {
                 className="flex-1"
                 aria-label={`${name} tempo`}
               />
+              <span className="w-10 shrink-0 text-right text-sm tabular-nums text-muted-foreground">
+                {tempo}
+              </span>
             </div>
 
             {loaded ? (
