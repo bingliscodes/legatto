@@ -45,17 +45,15 @@ export default function Playhead({
     return (e: React.MouseEvent) => {
       e.stopPropagation();
       draggedRef.current = true;
+      function edgeTime(clientX: number) {
+        const t = clientXToTime(clientX);
+        return edge === "start" ? Math.min(t, loopEnd) : Math.max(t, loopStart);
+      }
       function onMove(ev: MouseEvent) {
-        const pos = clientXToTime(ev.clientX);
-        if (
-          (edge === "start" && pos > loopEnd) ||
-          (edge === "end" && pos < loopStart)
-        )
-          return;
-        setDrag({ edge, time: clientXToTime(ev.clientX) });
+        setDrag({ edge, time: edgeTime(ev.clientX) });
       }
       function onUp(ev: MouseEvent) {
-        setLoop((l) => ({ ...l, [edge]: clientXToTime(ev.clientX) }));
+        setLoop((l) => ({ ...l, [edge]: edgeTime(ev.clientX) }));
         setDrag(null);
         window.removeEventListener("mousemove", onMove);
         window.removeEventListener("mouseup", onUp);
