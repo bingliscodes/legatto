@@ -25,9 +25,10 @@ async def save_file_to_disk(file: UploadFile, job_dir) -> Path:
 
 
 @router.post("/", response_model=TrackResponse)
-async def proccess_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
+async def process_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
     """Takes in an audio file, creates track id, initialize directory, save to disk, drop the job in the queue, return job id"""
-    track_id = uuid4().hex
+    track_id = track_id = str(uuid4())
+
     job_dir = STORAGE_ROOT / track_id
     job_dir.mkdir(parents=True, exist_ok=True)
 
@@ -39,17 +40,15 @@ async def proccess_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
     new_track = Track(id=track_id, display_name=audio_file.filename)
     db.add(new_track)
     db.commit()
-
-    job = task_queue.enqueue(stem_separator, input_path, stems_path, job_id=track_id)
-
-    return track_id
+    db.refresh(new_track)
+    task_queue.enqueue(stem_separator, input_path, stems_path, job_id=track_id)
+    return new_track
 
 
 @router.get("/{track_id}/stems/{filename}")
 def get_stem(track_id: str, filename: str):
     stems_dir = (STORAGE_ROOT / track_id / "stems").resolve()
     path = (stems_dir / filename).resolve()
-    print("stems_dir", stems_dir, "path: ", path)
     if not path.is_relative_to(stems_dir) or not path.is_file():
         raise HTTPException(status_code=404)
 
