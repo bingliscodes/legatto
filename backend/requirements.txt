@@ -8,3 +8,6 @@ rq
 python-dotenv
 demucs
 torchcodec
+sqlalchemy
+alembic
+psycopg2-binary
