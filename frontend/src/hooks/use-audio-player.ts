@@ -136,6 +136,10 @@ export function useAudioPlayer() {
         source.loopStart = A / tempo;
         source.loopEnd = B / tempo;
       }
+      source.onended = () => {
+        setIsPlaying(false);
+        isPlayingRef.current = false;
+      };
       source.start(when, startOffsetRef.current / tempo);
       sources.push(source);
     }
@@ -170,6 +174,7 @@ export function useAudioPlayer() {
   }
 
   function pause_playback() {
+    sourcesRef.current.values().next().value?.onended = null;
     sourcesRef.current.forEach((s) => {
       try {
         s.stop();
