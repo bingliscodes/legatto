@@ -17,5 +17,5 @@ export function useLibrary() {
   useEffect(() => {
     refresh();
   }, []);
-  return { tracks, setTracks, refresh };
+  return { tracks, refresh };
 }
