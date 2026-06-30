@@ -1,4 +1,5 @@
 import { usePlayhead } from "@/hooks/use-playhead";
+import { cn } from "@/lib/utils";
 
 export default function Playhead({
   getPlayhead,
@@ -24,7 +25,12 @@ export default function Playhead({
     <div className="relative h-8 w-full rounded bg-muted" onClick={handleClick}>
       {duration > 0 && loop.end > loop.start && (
         <div
-          className="absolute h-full bg-primary/20"
+          className={cn(
+            "absolute top-0 h-full",
+            loop.active
+              ? "bg-primary/30 border border-primary" // engaged: brighter + framed
+              : "bg-primary/10", // armed: faint, no border
+          )}
           style={{
             left: `${(loop.start / duration) * 100}%`,
             width: `${((loop.end - loop.start) / duration) * 100}%`,
