@@ -103,7 +103,6 @@ function App() {
                 value={[tempo]}
                 min={0.5}
                 max={1.0}
-                defaultValue={[1.0]}
                 step={0.01}
                 onValueChange={([v]) => setTempo(v)}
                 className="flex-1"
