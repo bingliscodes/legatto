@@ -207,8 +207,7 @@ export function useAudioPlayer() {
   // –– Set playback to position clicked ––
   function seek(target: number) {
     startOffsetRef.current = target;
-    if (!isPlayingRef.current) return;
-    play(false);
+    if (isPlayingRef.current) play(false);
   }
 
   // –– Set the playback buffers based on tempo ––
