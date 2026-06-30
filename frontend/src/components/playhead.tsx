@@ -24,9 +24,11 @@ export default function Playhead({
 
   const position = usePlayhead(getPlayhead);
   const trackRef = useRef<HTMLDivElement>(null);
-  const pct = duration > 0 ? (position / duration) * 100 : 0;
+  const draggedRef = useRef(false);
+
   const loopStart = drag?.edge === "start" ? drag.time : loop.start;
   const loopEnd = drag?.edge === "end" ? drag.time : loop.end;
+  const pct = duration > 0 ? (position / duration) * 100 : 0;
   const startPct = duration > 0 ? (loopStart / duration) * 100 : 0;
   const endPct = duration > 0 ? (loopEnd / duration) * 100 : 0;
 
@@ -40,6 +42,7 @@ export default function Playhead({
   }
 
   function startDrag(edge: "start" | "end") {
+    draggedRef.current = true;
     return (e: React.MouseEvent) => {
       e.stopPropagation();
 
@@ -57,6 +60,10 @@ export default function Playhead({
   }
 
   function handleClick(e: React.MouseEvent<HTMLDivElement>) {
+    if (draggedRef.current) {
+      draggedRef.current = false;
+      return;
+    }
     onSeek(clientXToTime(e.clientX));
   }
 
