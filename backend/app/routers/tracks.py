@@ -27,9 +27,9 @@ async def save_file_to_disk(file: UploadFile, job_dir) -> Path:
 
 @router.get("/", response_model=list[TrackResponse])
 def get_tracks(db: Session = Depends(get_db)):
-    """Returns all tracks, sorted by created_date (newest first)"""
+    """Returns all tracks, sorted by created_at (newest first)"""
     stmt = select(Track).order_by(Track.created_at.desc())
-    return db.execute(stmt).all()
+    return db.execute(stmt).scalars().all()
 
 
 @router.post("/", response_model=TrackResponse)
