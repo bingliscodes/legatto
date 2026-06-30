@@ -16,10 +16,10 @@ export type Track = {
   created_at: string;
 };
 
-export async function uploadTrack(file: File): Promise<string> {
+export async function uploadTrack(file: File): Promise<Track> {
   const formData = new FormData();
   formData.append("audio_file", file);
-  const res = await axios.post<string>(`${API_BASE}/tracks/`, formData);
+  const res = await axios.post<Track>(`${API_BASE}/tracks/`, formData);
   return res.data;
 }
 
