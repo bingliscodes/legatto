@@ -8,6 +8,7 @@ from app.queue import redis_client, task_queue
 from app.tasks import stem_separator
 from app.config import STORAGE_ROOT
 from app.database import get_db
+from app.models.track import Track
 from app.schemas.track import TrackResponse
 
 router = APIRouter(prefix="/tracks")
@@ -35,7 +36,7 @@ async def proccess_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
     stems_path.mkdir(parents=True, exist_ok=True)
 
     # Create new track in DB before enqueuing task
-    new_track = TrackResponse(id=track_id, display_name=audio_file.filename)
+    new_track = Track(id=track_id, display_name=audio_file.filename)
     db.add(new_track)
     db.commit()
 
