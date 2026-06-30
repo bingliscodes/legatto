@@ -27,3 +27,8 @@ export async function getJob(id: string): Promise<JobStatus> {
   const res = await axios.get<JobStatus>(`${API_BASE}/jobs/${id}`);
   return res.data;
 }
+
+export async function getTracks(): Promise<Track[]> {
+  const res = await axios.get<Track[]>(`${API_BASE}/tracks/}`);
+  return res.data;
+}
