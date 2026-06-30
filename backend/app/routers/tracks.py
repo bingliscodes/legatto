@@ -1,6 +1,7 @@
 from fastapi import UploadFile, APIRouter, HTTPException, Depends
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from uuid import uuid4
 from pathlib import Path
 
@@ -22,6 +23,13 @@ async def save_file_to_disk(file: UploadFile, job_dir) -> Path:
     destination_path.write_bytes(contents)
 
     return destination_path
+
+
+@router.get("/", response_model=list[TrackResponse])
+def get_tracks(db: Session = Depends(get_db)):
+    """Returns all tracks, sorted by created_date (newest first)"""
+    stmt = select(Track).order_by(Track.created_at.desc())
+    return db.execute(stmt).all()
 
 
 @router.post("/", response_model=TrackResponse)
