@@ -8,6 +8,7 @@ from app.queue import redis_client, task_queue
 from app.tasks import stem_separator
 from app.config import STORAGE_ROOT
 from app.database import get_db
+from app.schemas.track import TrackResponse
 
 router = APIRouter(prefix="/tracks")
 
@@ -22,7 +23,7 @@ async def save_file_to_disk(file: UploadFile, job_dir) -> Path:
     return destination_path
 
 
-@router.post("/")
+@router.post("/", response_model=TrackResponse)
 async def proccess_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
     """Takes in an audio file, creates track id, initialize directory, save to disk, drop the job in the queue, return job id"""
     track_id = uuid4().hex
@@ -34,6 +35,7 @@ async def proccess_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
     stems_path.mkdir(parents=True, exist_ok=True)
 
     job = task_queue.enqueue(stem_separator, input_path, stems_path, job_id=track_id)
+    new_track = TrackResponse()
     return track_id
 
 
