@@ -11,13 +11,13 @@ export function useAudioPlayer() {
   const [soloed, setSoloed] = useState<string | null>(null);
   const [tempo, setTempo] = useState<number>(1.0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [loop, setLoop] = useState({ active: false, start: 0, end: 5 });
+  const [loop, setLoop] = useState({ active: false, start: 0, end: 0 });
 
   // Decoded audio + the persistent per-stem gain nodes. These are refs, not
   // state: they're mutable audio objects that must survive re-renders and
   // must NOT trigger one when they change.
   const buffersRef = useRef<Map<string, AudioBuffer>>(new Map());
-  const durationRef = useRef<number | undefined>(0);
+  const durationRef = useRef<number>(0);
   const playbackBuffersRef = useRef<Map<string, AudioBuffer>>(new Map());
   const gainsRef = useRef<Map<string, GainNode>>(new Map());
   const startCtxTimeRef = useRef<number>(0);
@@ -66,7 +66,7 @@ export function useAudioPlayer() {
       }),
     );
 
-    durationRef.current = buffersRef.current.values().next().value?.duration;
+    durationRef.current = buffersRef.current.values().next().value.duration;
 
     const initial: Record<string, StemUI> = {};
     for (const name of Object.keys(stems))
@@ -210,6 +210,12 @@ export function useAudioPlayer() {
     if (isPlayingRef.current) play(false);
   }
 
+  const toggleLoop = () => {
+    setLoop((l) =>
+      l.active ? { ...l, active: false } : { active: true, start: 0, end: 2 },
+    );
+  };
+
   // –– Set the playback buffers based on tempo ––
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -264,5 +270,6 @@ export function useAudioPlayer() {
     seek,
     duration: durationRef.current,
     getPlayhead: currentPlayhead,
+    toggleLoop,
   };
 }

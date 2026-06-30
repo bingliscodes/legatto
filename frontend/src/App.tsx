@@ -32,6 +32,7 @@ function App() {
     duration,
     getPlayhead,
     setLoop,
+    toggleLoop,
     seek,
     loop,
   } = useAudioPlayer();
@@ -97,12 +98,7 @@ function App() {
               <Button variant="outline" onClick={stop} disabled={!isPlaying}>
                 Stop
               </Button>
-              <Button
-                onClick={() => setLoop((l) => ({ ...l, active: !l.active }))}
-                disabled={!isPlaying}
-              >
-                Toggle Loop
-              </Button>
+              <Button onClick={toggleLoop}>Toggle Loop</Button>
               <Slider
                 value={[tempo]}
                 min={0.5}
