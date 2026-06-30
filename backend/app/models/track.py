@@ -1,13 +1,11 @@
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import DateTime, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
 import uuid
 import enum
 from datetime import datetime
 
-
-class Base(DeclarativeBase):
-    pass
+from app.database import Base
 
 
 class TrackStatus(enum.Enum):
