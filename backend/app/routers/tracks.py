@@ -1,11 +1,13 @@
-from fastapi import UploadFile, APIRouter, HTTPException
+from fastapi import UploadFile, APIRouter, HTTPException, Depends
 from fastapi.responses import FileResponse
+from sqlalchemy.orm import Session
 from uuid import uuid4
 from pathlib import Path
 
 from app.queue import redis_client, task_queue
 from app.tasks import stem_separator
 from app.config import STORAGE_ROOT
+from app.database import get_db
 
 router = APIRouter(prefix="/tracks")
 
@@ -21,7 +23,7 @@ async def save_file_to_disk(file: UploadFile, job_dir) -> Path:
 
 
 @router.post("/")
-async def proccess_audio(audio_file: UploadFile):
+async def proccess_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
     """Takes in an audio file, creates track id, initialize directory, save to disk, drop the job in the queue, return job id"""
     track_id = uuid4().hex
     job_dir = STORAGE_ROOT / track_id
