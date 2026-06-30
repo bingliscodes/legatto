@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from uuid import uuid4
 from pathlib import Path
 
-from app.queue import redis_client, task_queue
+from app.queue import task_queue
 from app.tasks import stem_separator
 from app.config import STORAGE_ROOT
 from app.database import get_db
@@ -27,7 +27,7 @@ async def save_file_to_disk(file: UploadFile, job_dir) -> Path:
 @router.post("/", response_model=TrackResponse)
 async def process_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
     """Takes in an audio file, creates track id, initialize directory, save to disk, drop the job in the queue, return job id"""
-    track_id = track_id = str(uuid4())
+    track_id = str(uuid4())
 
     job_dir = STORAGE_ROOT / track_id
     job_dir.mkdir(parents=True, exist_ok=True)
