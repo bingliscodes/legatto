@@ -212,7 +212,9 @@ export function useAudioPlayer() {
 
   const toggleLoop = () => {
     setLoop((l) =>
-      l.active ? { ...l, active: false } : { active: true, start: 0, end: 2 },
+      l.active
+        ? { ...l, active: false }
+        : { active: true, start: 0, end: durationRef.current },
     );
   };
 
