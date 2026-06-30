@@ -42,10 +42,9 @@ export default function Playhead({
   }
 
   function startDrag(edge: "start" | "end") {
-    draggedRef.current = true;
     return (e: React.MouseEvent) => {
       e.stopPropagation();
-
+      draggedRef.current = true;
       function onMove(ev: MouseEvent) {
         setDrag({ edge, time: clientXToTime(ev.clientX) });
       }
