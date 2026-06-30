@@ -73,7 +73,10 @@ export function useAudioPlayer() {
 
   // ── Synchronized playback ──
   const currentPlayhead = (): number => {
-    // Gets the position in the original un-stretched song timeline
+    /* Gets the position in the original un-stretched song timeline */
+
+    if (!isPlayingRef.current) return startOffsetRef.current;
+
     const ctx = getContext();
     const rawPosition =
       startOffsetRef.current +
