@@ -33,6 +33,7 @@ function App() {
     getPlayhead,
     setLoop,
     seek,
+    loop,
   } = useAudioPlayer();
   const { upload, status, stems } = useSeparationJob();
 
@@ -120,6 +121,7 @@ function App() {
               duration={duration}
               getPlayhead={getPlayhead}
               onSeek={seek}
+              loop={loop}
             />
 
             {loaded ? (
