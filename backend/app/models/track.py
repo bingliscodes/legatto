@@ -18,11 +18,9 @@ class TrackStatus(enum.Enum):
 
 
 class Track(Base):
-    __tablename__ = "track"
+    __tablename__ = "tracks"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
 
     display_name: Mapped[str]
     artist: Mapped[str | None]
