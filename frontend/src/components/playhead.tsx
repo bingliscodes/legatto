@@ -13,8 +13,8 @@ export default function Playhead({
 
   function handleClick(e: React.MouseEvent<HTMLDivElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
-    const fraction = (e.clientX - rect.left) / rect.width; // 0..1 across the bar
-    onSeek(fraction * duration); // → seconds
+    const fraction = (e.clientX - rect.left) / rect.width;
+    onSeek(fraction * duration);
   }
   const pct = duration > 0 ? (position / duration) * 100 : 0;
 
