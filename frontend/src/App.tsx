@@ -11,9 +11,11 @@ import {
 } from "@/components/ui/card";
 import { StemControl } from "@/components/stem-control";
 import { useAudioPlayer } from "@/hooks/use-audio-player";
-import { useSeparationJob } from "./hooks/use-separation-job";
+import { useSeparationJob } from "@/hooks/use-separation-job";
+import { useLibrary } from "@/hooks/use-library";
 import { API_BASE } from "./lib/api";
 import Playhead from "./components/playhead";
+import TrackList from "./components/track-list";
 
 function App() {
   const {
@@ -37,6 +39,7 @@ function App() {
     loop,
   } = useAudioPlayer();
   const { upload, status, stems } = useSeparationJob();
+  const { tracks } = useLibrary();
 
   useEffect(() => {
     if (!stems) return;
@@ -119,6 +122,7 @@ function App() {
               loop={loop}
               setLoop={setLoop}
             />
+            {<TrackList tracks={tracks} />}
 
             {loaded ? (
               <div className="space-y-2">
