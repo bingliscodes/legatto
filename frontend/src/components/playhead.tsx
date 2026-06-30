@@ -8,7 +8,6 @@ export default function Playhead({
   duration: number;
 }) {
   const position = usePlayhead(getPlayhead);
-  // TODO: convert position (seconds) → a percent across the bar, render the cursor
 
   const pct = duration > 0 ? (position / duration) * 100 : 0;
 

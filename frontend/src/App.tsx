@@ -13,6 +13,7 @@ import { StemControl } from "@/components/stem-control";
 import { useAudioPlayer } from "@/hooks/use-audio-player";
 import { useSeparationJob } from "./hooks/use-separation-job";
 import { API_BASE } from "./lib/api";
+import Playhead from "./components/playhead";
 
 function App() {
   const {
@@ -28,7 +29,8 @@ function App() {
     stemState,
     soloed,
     isPlaying,
-    loop,
+    duration,
+    getPlayhead,
     setLoop,
   } = useAudioPlayer();
   const { upload, status, stems } = useSeparationJob();
@@ -113,6 +115,7 @@ function App() {
                 {tempo.toFixed(2)}×
               </span>
             </div>
+            <Playhead duration={duration} getPlayhead={getPlayhead} />
 
             {loaded ? (
               <div className="space-y-2">

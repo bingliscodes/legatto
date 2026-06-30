@@ -246,5 +246,6 @@ export function useAudioPlayer() {
     loop,
     setLoop,
     duration: durationRef.current,
+    getPlayhead: currentPlayhead,
   };
 }
