@@ -21,7 +21,8 @@ export function useAudioPlayer() {
   const playbackBuffersRef = useRef<Map<string, AudioBuffer>>(new Map());
   const gainsRef = useRef<Map<string, GainNode>>(new Map());
   const startCtxTimeRef = useRef<number>(0);
-  const startOffsetRef = useRef<number>(0);
+
+  const startOffsetRef = useRef<number>(0); // the song-timeline position (original seconds) where the current playback segment began
   const playbackTempoRef = useRef<number>(1.0);
   // The region the LIVE sources are actually looping under — snapshotted in play(),
   // NOT the latest UI selection (that's loopRef). currentPlayhead() wraps with this
@@ -99,16 +100,24 @@ export function useAudioPlayer() {
     play();
   };
 
-  function play() {
+  function play(clamp = true) {
     const ctx = getContext();
     pause_playback();
 
     const { active, start: A, end: B } = loopRef.current;
-    if (active && (startOffsetRef.current < A || startOffsetRef.current >= B)) {
+
+    if (
+      clamp &&
+      active &&
+      (startOffsetRef.current < A || startOffsetRef.current >= B)
+    ) {
       startOffsetRef.current = A;
     }
 
-    const when = ctx.currentTime + 0.1; // ONE shared start time → sample-accurate sync
+    const shouldLoop =
+      active && startOffsetRef.current >= A && startOffsetRef.current < B;
+
+    const when = ctx.currentTime + 0.1;
     startCtxTimeRef.current = when;
     const sources: AudioBufferSourceNode[] = [];
 
@@ -120,7 +129,7 @@ export function useAudioPlayer() {
       source.buffer = buffer;
       source.connect(gain);
       // seconds into the stretched buffer = currentPlayhead() / tempo
-      if (active) {
+      if (shouldLoop) {
         source.loop = true;
         source.loopStart = A / tempo;
         source.loopEnd = B / tempo;
@@ -134,7 +143,7 @@ export function useAudioPlayer() {
     isPlayingRef.current = true;
     playbackTempoRef.current = tempo;
     // Snapshot the region these sources were started with — now "what's sounding".
-    playbackLoopRef.current = { active, start: A, end: B };
+    playbackLoopRef.current = { active: shouldLoop, start: A, end: B };
   }
 
   function pause() {
@@ -194,6 +203,14 @@ export function useAudioPlayer() {
   function toggleSolo(name: string) {
     setSoloed((prev) => (prev === name ? null : name)); // click again to un-solo
   }
+
+  // –– Set playback to position clicked ––
+  function seek(target: number) {
+    startOffsetRef.current = target;
+    if (!isPlayingRef.current) return;
+    play(false);
+  }
+
   // –– Set the playback buffers based on tempo ––
   useEffect(() => {
     const timeout = setTimeout(() => {
