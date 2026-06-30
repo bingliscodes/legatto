@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 
 import { usePlayhead } from "@/hooks/use-playhead";
 import { cn } from "@/lib/utils";
-import { type loop } from "@/hooks/use-audio-player";
+import { type Loop } from "@/hooks/use-audio-player";
 
 export default function Playhead({
   getPlayhead,
@@ -15,7 +15,7 @@ export default function Playhead({
   duration: number;
   onSeek: (target: number) => void;
   loop: { active: boolean; start: number; end: number };
-  setLoop: React.Dispatch<React.SetStateAction<loop>>;
+  setLoop: React.Dispatch<React.SetStateAction<Loop>>;
 }) {
   const [drag, setDrag] = useState<{
     edge: "start" | "end";
