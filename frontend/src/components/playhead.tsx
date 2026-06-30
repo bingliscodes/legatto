@@ -46,6 +46,12 @@ export default function Playhead({
       e.stopPropagation();
       draggedRef.current = true;
       function onMove(ev: MouseEvent) {
+        const pos = clientXToTime(ev.clientX);
+        if (
+          (edge === "start" && pos > loopEnd) ||
+          (edge === "end" && pos < loopStart)
+        )
+          return;
         setDrag({ edge, time: clientXToTime(ev.clientX) });
       }
       function onUp(ev: MouseEvent) {
