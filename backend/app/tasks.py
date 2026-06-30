@@ -27,8 +27,8 @@ def stem_separator(track_id: str, input_path: str, output_directory: str):
     model = get_demucs_model()
     db = SessionLocal()
     try:
-        job = db.get(Track, uuid.UUID(track_id))
-        job.status = TrackStatus.processing
+        track = db.get(Track, uuid.UUID(track_id))
+        track.status = TrackStatus.processing
         db.commit()
 
         # Processing work
@@ -55,9 +55,12 @@ def stem_separator(track_id: str, input_path: str, output_directory: str):
                 str(Path(output_directory) / f"{name}.wav"),
                 samplerate=model.samplerate,
             )
-    except:
-        job.status = TrackStatus.failed
+
+        track.status = TrackStatus.completed
         db.commit()
-        # Re raise?
+    except Exception:
+        track.status = TrackStatus.failed
+        db.commit()
+        raise
     finally:
         db.close()
