@@ -34,8 +34,13 @@ async def proccess_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
     stems_path = job_dir / "stems"
     stems_path.mkdir(parents=True, exist_ok=True)
 
+    # Create new track in DB before enqueuing task
+    new_track = TrackResponse(id=track_id, display_name=audio_file.filename)
+    db.add(new_track)
+    db.commit()
+
     job = task_queue.enqueue(stem_separator, input_path, stems_path, job_id=track_id)
-    new_track = TrackResponse()
+
     return track_id
 
 
