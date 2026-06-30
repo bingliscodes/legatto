@@ -216,7 +216,9 @@ export function useAudioPlayer() {
     setLoop((l) =>
       l.active
         ? { ...l, active: false }
-        : { active: true, start: 0, end: durationRef.current },
+        : l.end > l.start
+          ? { ...l, active: true }
+          : { active: true, start: 0, end: durationRef.current },
     );
   };
 
