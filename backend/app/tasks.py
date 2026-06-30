@@ -1,9 +1,14 @@
 # the stem separator — the "work"
 from pathlib import Path
+from app.database import SessionLocal
 from demucs.pretrained import get_model
 from demucs.apply import apply_model
 from demucs.audio import AudioFile, save_audio
 import torch
+
+
+from app.config import settings
+
 
 from app.config import SHIFTS, OVERLAP
 
@@ -19,8 +24,9 @@ def get_demucs_model():
     return model
 
 
-def stem_separator(input_path: str, output_directory: str):
+def stem_separator(track_id: str, input_path: str, output_directory: str):
     """Creates a new file for each instrument"""
+    db = SessionLocal()
     model = get_demucs_model()
     wav = AudioFile(input_path).read(
         streams=0, samplerate=model.samplerate, channels=model.audio_channels

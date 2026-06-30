@@ -41,7 +41,9 @@ async def process_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
     db.add(new_track)
     db.commit()
     db.refresh(new_track)
-    task_queue.enqueue(stem_separator, input_path, stems_path, job_id=track_id)
+    task_queue.enqueue(
+        stem_separator, track_id, input_path, stems_path, job_id=track_id
+    )
     return new_track
 
 
