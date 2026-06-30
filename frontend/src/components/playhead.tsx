@@ -49,7 +49,11 @@ export default function Playhead({
   }
 
   return (
-    <div className="relative h-8 w-full rounded bg-muted" onClick={handleClick}>
+    <div
+      ref={trackRef}
+      className="relative h-8 w-full rounded bg-muted"
+      onClick={handleClick}
+    >
       {duration > 0 && loop.end > loop.start && (
         <div
           className={cn(
@@ -64,16 +68,20 @@ export default function Playhead({
           }}
         />
       )}
-      <div
-        className="absolute top-0 h-full w-2 -translate-x-1/2 bg-primary cursor-grab"
-        style={{ left: `${startPct}%` }}
-        onMouseDown={startDrag("start")}
-      />
-      <div
-        className="absolute top-0 h-full w-2 -translate-x-1/2 bg-primary cursor-grab"
-        style={{ left: `${endPct}%` }}
-        onMouseDown={startDrag("start")}
-      />
+      {loop.active && (
+        <div
+          className="absolute top-0 h-full w-2 -translate-x-1/2 bg-primary cursor-grab"
+          style={{ left: `${startPct}%` }}
+          onMouseDown={startDrag("start")}
+        />
+      )}
+      {loop.active && (
+        <div
+          className="absolute top-0 h-full w-2 -translate-x-1/2 bg-primary cursor-grab"
+          style={{ left: `${endPct}%` }}
+          onMouseDown={startDrag("end")}
+        />
+      )}
       <div
         className="absolute top-0 h-full w-0.5 bg-primary"
         style={{ left: `${pct}%` }}
