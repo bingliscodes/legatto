@@ -4,7 +4,7 @@ import { stretchBuffer } from "@/lib/stretch";
 // stem name -> URL, matching the `stems` dict returned by GET /jobs/{id}
 type Stems = Record<string, string>;
 type StemUI = { volume: number; muted: boolean };
-export type loop = { active: false; start: 0; end: 0 };
+export type loop = { active: boolean; start: number; end: number };
 
 export function useAudioPlayer() {
   const ctxRef = useRef<AudioContext | null>(null);
@@ -67,7 +67,8 @@ export function useAudioPlayer() {
       }),
     );
 
-    durationRef.current = buffersRef.current.values().next().value.duration;
+    durationRef.current =
+      buffersRef.current.values().next().value?.duration ?? 0;
 
     const initial: Record<string, StemUI> = {};
     for (const name of Object.keys(stems))
