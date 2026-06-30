@@ -1,6 +1,6 @@
 import { usePlayhead } from "@/hooks/use-playhead";
 
-function Playhead({
+export default function Playhead({
   getPlayhead,
   duration,
 }: {
@@ -9,4 +9,15 @@ function Playhead({
 }) {
   const position = usePlayhead(getPlayhead);
   // TODO: convert position (seconds) → a percent across the bar, render the cursor
+
+  const pct = duration > 0 ? (position / duration) * 100 : 0;
+
+  return (
+    <div className="relative h-8 w-full rounded bg-muted">
+      <div
+        className="absolute top-0 h-full w-0.5 bg-primary"
+        style={{ left: `${pct}%` }}
+      />
+    </div>
+  );
 }
