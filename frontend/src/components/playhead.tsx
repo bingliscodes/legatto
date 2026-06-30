@@ -93,14 +93,14 @@ export default function Playhead({
       )}
       {loop.active && (
         <div
-          className="absolute top-0 h-full w-2 -translate-x-1/2 bg-primary cursor-grab"
+          className="absolute top-0 h-full w-1.5 -translate-x-1/2 bg-primary cursor-grab"
           style={{ left: `${startPct}%` }}
           onMouseDown={startDrag("start")}
         />
       )}
       {loop.active && (
         <div
-          className="absolute top-0 h-full w-2 -translate-x-1/2 bg-primary cursor-grab"
+          className="absolute top-0 h-full w-1.5 -translate-x-1/2 bg-primary cursor-grab"
           style={{ left: `${endPct}%` }}
           onMouseDown={startDrag("end")}
         />
