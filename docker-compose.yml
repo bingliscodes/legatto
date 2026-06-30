@@ -2,6 +2,17 @@
 # Slice 1 only needs Redis (RQ's broker + job registry).
 # Postgres will be added here in the slice where we persist track/stem metadata.
 services:
+  postgres:
+    image: postgres:17.4-alpine3.21
+    container_name: guitar_practice_tool
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: guitar_practice_tool
+    ports:
+      - "5432:5432"
+
   redis:
     image: redis:7-alpine
     ports:
