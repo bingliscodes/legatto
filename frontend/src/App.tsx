@@ -117,6 +117,7 @@ function App() {
               getPlayhead={getPlayhead}
               onSeek={seek}
               loop={loop}
+              setLoop={setLoop}
             />
 
             {loaded ? (
