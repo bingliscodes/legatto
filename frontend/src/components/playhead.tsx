@@ -22,7 +22,7 @@ export default function Playhead({
 
   return (
     <div className="relative h-8 w-full rounded bg-muted" onClick={handleClick}>
-      {loop.active && (
+      {duration > 0 && loop.end > loop.start && (
         <div
           className="absolute h-full bg-primary/20"
           style={{
