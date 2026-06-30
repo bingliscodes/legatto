@@ -174,8 +174,8 @@ export function useAudioPlayer() {
   }
 
   function pause_playback() {
-    sourcesRef.current.values().next().value?.onended = null;
     sourcesRef.current.forEach((s) => {
+      s.onended = null;
       try {
         s.stop();
       } catch {
