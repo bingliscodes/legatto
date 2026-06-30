@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 import { usePlayhead } from "@/hooks/use-playhead";
 import { cn } from "@/lib/utils";
@@ -17,23 +17,37 @@ export default function Playhead({
   loop: { active: boolean; start: number; end: number };
   setLoop: React.Dispatch<React.SetStateAction<loop>>;
 }) {
+  const [drag, setDrag] = useState<{
+    edge: "start" | "end";
+    time: number;
+  } | null>(null);
+
   const position = usePlayhead(getPlayhead);
   const trackRef = useRef<HTMLDivElement>(null);
   const pct = duration > 0 ? (position / duration) * 100 : 0;
-  const startPct = duration > 0 ? (loop.start / duration) * 100 : 0;
-  const endPct = duration > 0 ? (loop.end / duration) * 100 : 0;
+  const loopStart = drag?.edge === "start" ? drag.time : loop.start;
+  const loopEnd = drag?.edge === "end" ? drag.time : loop.end;
+  const startPct = duration > 0 ? (loopStart / duration) * 100 : 0;
+  const endPct = duration > 0 ? (loopEnd / duration) * 100 : 0;
+
+  function clientXToTime(clientX: number) {
+    const rect = trackRef.current!.getBoundingClientRect();
+    const fraction = Math.min(
+      Math.max((clientX - rect.left) / rect.width, 0),
+      1,
+    );
+    return fraction * duration;
+  }
 
   function startDrag(edge: "start" | "end") {
     return (e: React.MouseEvent) => {
       e.stopPropagation();
 
       function onMove(ev: MouseEvent) {
-        const rect = trackRef.current!.getBoundingClientRect();
-        let fraction = (ev.clientX - rect.left) / rect.width;
-        fraction = Math.min(Math.max(fraction, 0), 1); // clamp to [0,1] (stay on the track)
-        setLoop((l) => ({ ...l, [edge]: fraction * duration })); // move just this one edge
+        setDrag({ edge, time: clientXToTime(ev.clientX) });
       }
       function onUp() {
+        setLoop((l) => ({ ...l, [edge]: clientXToTime(ev.clientX) }));
         window.removeEventListener("mousemove", onMove);
         window.removeEventListener("mouseup", onUp);
       }
@@ -43,9 +57,7 @@ export default function Playhead({
   }
 
   function handleClick(e: React.MouseEvent<HTMLDivElement>) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const fraction = (e.clientX - rect.left) / rect.width;
-    onSeek(fraction * duration);
+    onSeek(clientXToTime(e.clientX));
   }
 
   return (
