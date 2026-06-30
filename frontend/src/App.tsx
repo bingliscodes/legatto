@@ -107,7 +107,7 @@ function App() {
                 step={0.01}
                 onValueChange={([v]) => setTempo(v)}
                 className="flex-1"
-                aria-label={`${name} tempo`}
+                aria-label="tempo"
               />
               <span className="w-12 shrink-0 text-right text-sm tabular-nums text-muted-foreground">
                 {tempo.toFixed(2)}×
