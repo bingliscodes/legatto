@@ -117,7 +117,7 @@ export function useAudioPlayer() {
     }
 
     const shouldLoop =
-      active && startOffsetRef.current >= A && startOffsetRef.current < B;
+      active && startOffsetRef.current >= A && startOffsetRef.current <= B;
 
     const when = ctx.currentTime + 0.1;
     startCtxTimeRef.current = when;

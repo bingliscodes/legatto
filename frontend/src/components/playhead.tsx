@@ -46,7 +46,7 @@ export default function Playhead({
       function onMove(ev: MouseEvent) {
         setDrag({ edge, time: clientXToTime(ev.clientX) });
       }
-      function onUp() {
+      function onUp(ev: MouseEvent) {
         setLoop((l) => ({ ...l, [edge]: clientXToTime(ev.clientX) }));
         window.removeEventListener("mousemove", onMove);
         window.removeEventListener("mouseup", onUp);
