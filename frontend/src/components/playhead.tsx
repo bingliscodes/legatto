@@ -50,6 +50,7 @@ export default function Playhead({
       }
       function onUp(ev: MouseEvent) {
         setLoop((l) => ({ ...l, [edge]: clientXToTime(ev.clientX) }));
+        setDrag(null);
         window.removeEventListener("mousemove", onMove);
         window.removeEventListener("mouseup", onUp);
       }
@@ -81,8 +82,8 @@ export default function Playhead({
               : "bg-primary/10", // armed: faint, no border
           )}
           style={{
-            left: `${(loop.start / duration) * 100}%`,
-            width: `${((loop.end - loop.start) / duration) * 100}%`,
+            left: `${startPct}%`,
+            width: `${endPct - startPct}%`,
           }}
         />
       )}
