@@ -17,7 +17,7 @@ export function useAudioPlayer() {
   // state: they're mutable audio objects that must survive re-renders and
   // must NOT trigger one when they change.
   const buffersRef = useRef<Map<string, AudioBuffer>>(new Map());
-  const durationRef = useRef<number>(0);
+  const durationRef = useRef<number | undefined>(0);
   const playbackBuffersRef = useRef<Map<string, AudioBuffer>>(new Map());
   const gainsRef = useRef<Map<string, GainNode>>(new Map());
   const startCtxTimeRef = useRef<number>(0);
@@ -65,7 +65,7 @@ export function useAudioPlayer() {
       }),
     );
 
-    durationRef.current = buffersRef.current.values().next().duration;
+    durationRef.current = buffersRef.current.values().next().value?.duration;
 
     const initial: Record<string, StemUI> = {};
     for (const name of Object.keys(stems))
@@ -245,5 +245,6 @@ export function useAudioPlayer() {
     isPlaying,
     loop,
     setLoop,
+    duration: durationRef.current,
   };
 }
