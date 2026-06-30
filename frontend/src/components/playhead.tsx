@@ -2,6 +2,7 @@ import { useRef } from "react";
 
 import { usePlayhead } from "@/hooks/use-playhead";
 import { cn } from "@/lib/utils";
+import { type loop } from "@/hooks/use-audio-player";
 
 export default function Playhead({
   getPlayhead,
@@ -14,7 +15,7 @@ export default function Playhead({
   duration: number;
   onSeek: (target: number) => void;
   loop: { active: boolean; start: number; end: number };
-  setLoop: () => void;
+  setLoop: React.Dispatch<React.SetStateAction<loop>>;
 }) {
   const position = usePlayhead(getPlayhead);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -64,14 +65,14 @@ export default function Playhead({
         />
       )}
       <div
-        className="absolute top-0 h-full w-0.75 bg-primary cursor-grab"
+        className="absolute top-0 h-full w-2 -translate-x-1/2 bg-primary cursor-grab"
         style={{ left: `${startPct}%` }}
-        onMouseDown={beginSelection}
-        onMouseUp={endSelection}
+        onMouseDown={startDrag("start")}
       />
       <div
-        className="absolute top-0 h-full w-0.75 bg-primary cursor-grab"
+        className="absolute top-0 h-full w-2 -translate-x-1/2 bg-primary cursor-grab"
         style={{ left: `${endPct}%` }}
+        onMouseDown={startDrag("start")}
       />
       <div
         className="absolute top-0 h-full w-0.5 bg-primary"

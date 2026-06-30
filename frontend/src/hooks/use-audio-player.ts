@@ -4,6 +4,7 @@ import { stretchBuffer } from "@/lib/stretch";
 // stem name -> URL, matching the `stems` dict returned by GET /jobs/{id}
 type Stems = Record<string, string>;
 type StemUI = { volume: number; muted: boolean };
+export type loop = { active: false; start: 0; end: 0 };
 
 export function useAudioPlayer() {
   const ctxRef = useRef<AudioContext | null>(null);
@@ -11,7 +12,7 @@ export function useAudioPlayer() {
   const [soloed, setSoloed] = useState<string | null>(null);
   const [tempo, setTempo] = useState<number>(1.0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [loop, setLoop] = useState({ active: false, start: 0, end: 0 });
+  const [loop, setLoop] = useState<loop>({ active: false, start: 0, end: 0 });
 
   // Decoded audio + the persistent per-stem gain nodes. These are refs, not
   // state: they're mutable audio objects that must survive re-renders and
