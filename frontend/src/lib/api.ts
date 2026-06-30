@@ -8,6 +8,14 @@ export type JobStatus = {
   stems: Record<string, string> | null;
 };
 
+export type Track = {
+  id: string;
+  display_name: string;
+  artist: string | null;
+  status: "queued" | "processing" | "completed" | "failed";
+  created_at: string;
+};
+
 export async function uploadTrack(file: File): Promise<string> {
   const formData = new FormData();
   formData.append("audio_file", file);

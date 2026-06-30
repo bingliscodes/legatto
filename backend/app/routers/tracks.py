@@ -27,7 +27,9 @@ async def save_file_to_disk(file: UploadFile, job_dir) -> Path:
 
 @router.get("/", response_model=list[TrackResponse])
 def get_tracks(db: Session = Depends(get_db)):
-    """Returns all tracks, sorted by created_at (newest first)"""
+    """Returns all tracks, sorted by created_at (newest first)
+    TODO: Add pagination/.limit()
+    """
     stmt = select(Track).order_by(Track.created_at.desc())
     return db.execute(stmt).scalars().all()
 
@@ -48,7 +50,7 @@ async def process_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
     new_track = Track(id=track_id, display_name=audio_file.filename)
     db.add(new_track)
     db.commit()
-    db.refresh(new_track)
+    db.refresh(new_track)  # Get latest record from DB
     task_queue.enqueue(
         stem_separator, track_id, input_path, stems_path, job_id=track_id
     )
