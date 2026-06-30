@@ -32,6 +32,7 @@ function App() {
     duration,
     getPlayhead,
     setLoop,
+    seek,
   } = useAudioPlayer();
   const { upload, status, stems } = useSeparationJob();
 
@@ -115,7 +116,11 @@ function App() {
                 {tempo.toFixed(2)}×
               </span>
             </div>
-            <Playhead duration={duration} getPlayhead={getPlayhead} />
+            <Playhead
+              duration={duration}
+              getPlayhead={getPlayhead}
+              seek={seek}
+            />
 
             {loaded ? (
               <div className="space-y-2">
