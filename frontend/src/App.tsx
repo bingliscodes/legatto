@@ -119,7 +119,7 @@ function App() {
             <Playhead
               duration={duration}
               getPlayhead={getPlayhead}
-              seek={seek}
+              onSeek={seek}
             />
 
             {loaded ? (
