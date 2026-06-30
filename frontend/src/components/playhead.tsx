@@ -20,6 +20,8 @@ export default function Playhead({
     onSeek(fraction * duration);
   }
   const pct = duration > 0 ? (position / duration) * 100 : 0;
+  const startPct = duration > 0 ? (loop.start / duration) * 100 : 0;
+  const endPct = duration > 0 ? (loop.end / duration) * 100 : 0;
 
   return (
     <div className="relative h-8 w-full rounded bg-muted" onClick={handleClick}>
@@ -37,6 +39,14 @@ export default function Playhead({
           }}
         />
       )}
+      <div
+        className="absolute top-0 h-full w-0.75 bg-primary cursor-ew-resize"
+        style={{ left: `${startPct}%` }}
+      />
+      <div
+        className="absolute top-0 h-full w-0.75 bg-primary cursor-ew-resize"
+        style={{ left: `${endPct}%` }}
+      />
       <div
         className="absolute top-0 h-full w-0.5 bg-primary"
         style={{ left: `${pct}%` }}
