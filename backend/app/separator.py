@@ -61,6 +61,7 @@ class LocalSeparator(Separator):
                 str(Path(output_dir) / f"{name}.wav"),
                 samplerate=self.model.samplerate,
             )
+        return list(self.model.sources)
 
 
 _separator: Separator | None = None
