@@ -29,7 +29,9 @@ function TrackItem({
 }) {
   return (
     <div
-      onClick={() => onSelect(track)}
+      onClick={() =>
+        track.status === "completed" ? onSelect(track) : undefined
+      }
       className="flex items-center justify-between gap-4 rounded-md border px-4 py-3"
     >
       <div className="min-w-0">
