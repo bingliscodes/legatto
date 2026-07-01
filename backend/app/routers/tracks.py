@@ -70,9 +70,8 @@ def get_track(track_id: str, db: Session = Depends(get_db)):
     stems = {}
     if track.status == TrackStatus.completed:
         stems_dir = (STORAGE_ROOT / track_id / "stems").resolve()
-        for file_path in sorted(stems_dir.glob("*.wav")):
-            if file_path.is_file():
-                stems[file_path.stem] = f"/tracks/{track_id}/stems/{file_path.name}"
+        for file_name in storage.list_stems(track_id):
+            stems[Path(file_name).stem] = f"/tracks/{track_id}/stems/{file_name}"
 
     return TrackDetailResponse(
         **TrackResponse.model_validate(track).model_dump(), stems=stems
@@ -81,6 +80,7 @@ def get_track(track_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{track_id}/stems/{filename}")
 def get_stem(track_id: str, filename: str):
+    # TODO: serve via storage.open(key) instead of FileResponse
     stems_dir = (STORAGE_ROOT / track_id / "stems").resolve()
     path = (stems_dir / filename).resolve()
     if not path.is_relative_to(stems_dir) or not path.is_file():

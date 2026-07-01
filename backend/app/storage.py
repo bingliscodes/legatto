@@ -32,6 +32,7 @@ class LocalStorage(Storage):
         )
 
     def open(self, key):
+        # TODO: Add traversal guard
         return (STORAGE_ROOT / key).read_bytes()
 
 
