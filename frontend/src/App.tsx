@@ -38,7 +38,7 @@ function App() {
     loop,
   } = useAudioPlayer();
 
-  const { upload, uploadStatus, tracks } = useLibrary();
+  const { upload, tracks } = useLibrary();
 
   function loadFromStems(stems: Record<string, string>) {
     const absolute_paths = Object.fromEntries(
@@ -85,7 +85,6 @@ function App() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <p className="text-sm text-muted-foreground">{uploadStatus}</p>
             <div className="flex gap-2">
               <input
                 type="file"

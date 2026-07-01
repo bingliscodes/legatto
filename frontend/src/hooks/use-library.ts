@@ -4,16 +4,13 @@ import { getTracks, uploadTrack, type Track } from "@/lib/api";
 
 export function useLibrary() {
   const [tracks, setTracks] = useState<Track[]>([]);
-  const [uploadStatus, setUploadStatus] = useState<string>("idle");
 
   async function upload(file: File) {
-    setUploadStatus("uploading");
     try {
       const track = await uploadTrack(file);
       setTracks((prev) => [track, ...prev]);
     } catch (err) {
       console.error("upload failed:", err);
-      setUploadStatus("error");
     }
   }
 
@@ -40,5 +37,5 @@ export function useLibrary() {
   useEffect(() => {
     refresh();
   }, [refresh]);
-  return { tracks, refresh, upload, uploadStatus };
+  return { tracks, refresh, upload };
 }
