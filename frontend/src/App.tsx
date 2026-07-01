@@ -95,7 +95,7 @@ function App() {
                   await upload(file);
                 }}
               />
-              <Button onClick={play} disabled={!loaded}>
+              <Button onClick={() => play()} disabled={!loaded}>
                 Play
               </Button>
               <Button onClick={pause} disabled={!loaded}>
