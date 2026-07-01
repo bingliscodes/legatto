@@ -36,3 +36,8 @@ export async function getTracks(): Promise<Track[]> {
   const res = await axios.get<Track[]>(`${API_BASE}/tracks/`);
   return res.data;
 }
+
+export async function getTrack(id: string): Promise<TrackDetail> {
+  const res = await axios.get<TrackDetail>(`${API_BASE}/jobs/${id}`);
+  return res.data;
+}
