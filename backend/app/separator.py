@@ -11,10 +11,6 @@ from app.config import settings, SHIFTS, OVERLAP
 class Separator(ABC):
 
     @abstractmethod
-    def get_demucs_model(self):
-        raise NotImplementedError
-
-    @abstractmethod
     def separate(
         self, input_path: Path, output_dir: Path
     ) -> list[str]:  # returns stem names written
@@ -39,7 +35,7 @@ class LocalSeparator(Separator):
             sources = apply_model(
                 self.model,
                 wav[None],
-                device="mps",
+                device=self.device,
                 shifts=SHIFTS,
                 overlap=OVERLAP,
             )[
