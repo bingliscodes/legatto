@@ -6,6 +6,7 @@ from uuid import uuid4
 from pathlib import Path
 import uuid
 
+from app.storage import get_storage
 from app.queue import task_queue
 from app.tasks import stem_separator
 from app.config import STORAGE_ROOT
@@ -14,6 +15,8 @@ from app.models.track import Track
 from app.schemas.track import TrackResponse, TrackDetailResponse, TrackStatus
 
 router = APIRouter(prefix="/tracks")
+
+storage = get_storage()
 
 
 async def save_file_to_disk(file: UploadFile, job_dir) -> Path:
@@ -40,12 +43,14 @@ async def process_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
     """Takes in an audio file, creates track id, initialize directory, save to disk, drop the job in the queue, return job id"""
     track_id = str(uuid4())
 
-    job_dir = STORAGE_ROOT / track_id
-    job_dir.mkdir(parents=True, exist_ok=True)
+    data = await audio_file.read()
+    input_key = f"{track_id}/{audio_file.filename}"
+    storage.write_file(input_key, data)
 
+    stems = storage.list_stems(track_id)
+    job_dir = STORAGE_ROOT / track_id
     input_path = await save_file_to_disk(audio_file, job_dir)
     stems_path = job_dir / "stems"
-    stems_path.mkdir(parents=True, exist_ok=True)
 
     # Create new track in DB before enqueuing task
     new_track = Track(id=track_id, display_name=audio_file.filename)

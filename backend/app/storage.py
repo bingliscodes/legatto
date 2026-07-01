@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from pathlib import Path
 from app.config import STORAGE_ROOT
 
 
@@ -32,3 +31,13 @@ class LocalStorage(Storage):
 
     def open(self, key):
         return (STORAGE_ROOT / key).read_bytes()
+
+
+_separator: Storage | None = None
+
+
+def get_storage() -> Storage:
+    global _separator
+    if _separator is None:
+        _separator = LocalStorage()
+    return _separator
