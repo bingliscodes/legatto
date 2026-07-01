@@ -68,7 +68,7 @@ def get_track(track_id: str, db: Session = Depends(get_db)):
     stems = {}
     if track.status == "completed":
         stems_dir = (STORAGE_ROOT / track_id / "stems").resolve()
-        for file_path in stems_dir.glob("*.wav"):
+        for file_path in sorted(stems_dir.glob("*.wav")):
             if file_path.is_file():
                 stems[file_path.stem] = f"/tracks/{track_id}/stems/{file_path.name}"
 
