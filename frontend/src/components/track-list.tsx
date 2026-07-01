@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+
 import { type Track } from "@/lib/api";
 
 export default function TrackList({
@@ -27,12 +29,16 @@ function TrackItem({
   track: Track;
   onSelect: (track: Track) => void;
 }) {
+  const isCompleted = track.status === "completed";
   return (
     <div
-      onClick={() =>
-        track.status === "completed" ? onSelect(track) : undefined
-      }
-      className="flex items-center justify-between gap-4 rounded-md border px-4 py-3"
+      onClick={() => {
+        if (isCompleted) onSelect(track);
+      }}
+      className={cn(
+        "flex items-center justify-between gap-4 rounded-md border px-4 py-3",
+        isCompleted && "cursor-pointer hover:bg-muted/50",
+      )}
     >
       <div className="min-w-0">
         <p className="truncate font-medium">{track.display_name}</p>
