@@ -16,6 +16,10 @@ export type Track = {
   created_at: string;
 };
 
+export type TrackDetail = Track & {
+  stems: Record<string, string>;
+};
+
 export async function uploadTrack(file: File): Promise<Track> {
   const formData = new FormData();
   formData.append("audio_file", file);
