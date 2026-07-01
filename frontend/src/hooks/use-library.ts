@@ -1,9 +1,20 @@
 // Hook designed to own the list of tracks
 import { useCallback, useState, useEffect } from "react";
-import { getTracks, type Track } from "@/lib/api";
+import { getTracks, uploadTrack, type Track } from "@/lib/api";
 
 export function useLibrary() {
   const [tracks, setTracks] = useState<Track[]>([]);
+  const [status, setStatus] = useState<string>("idle");
+
+  async function upload(file: File) {
+    setStatus("uploading");
+    try {
+      await uploadTrack(file);
+    } catch (err) {
+      console.error("upload failed:", err);
+      setStatus("error");
+    }
+  }
 
   const refresh = useCallback(async () => {
     try {
@@ -17,5 +28,5 @@ export function useLibrary() {
   useEffect(() => {
     refresh();
   }, [refresh]);
-  return { tracks, refresh };
+  return { tracks, refresh, upload };
 }
