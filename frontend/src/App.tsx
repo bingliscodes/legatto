@@ -41,14 +41,18 @@ function App() {
   const { upload, status, stems } = useSeparationJob();
   const { tracks } = useLibrary();
 
-  useEffect(() => {
-    if (!stems) return;
+  function loadFromStems(stems: Record<string, string>) {
     const absolute_paths = Object.fromEntries(
       Object.entries(stems).map(([name, url]) => [name, `${API_BASE}${url}`]),
     );
     load(absolute_paths);
     // Intentionally runs only when `stems` changes; `load` is stable in behavior.
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }
+
+  useEffect(() => {
+    if (!stems) return;
+    loadFromStems(stems);
   }, [stems]);
 
   const stemNames = Object.keys(stemState);
