@@ -33,11 +33,11 @@ class LocalStorage(Storage):
         return (STORAGE_ROOT / key).read_bytes()
 
 
-_separator: Storage | None = None
+_storage: Storage | None = None
 
 
 def get_storage() -> Storage:
-    global _separator
-    if _separator is None:
-        _separator = LocalStorage()
-    return _separator
+    global _storage
+    if _storage is None:
+        _storage = LocalStorage()
+    return _storage

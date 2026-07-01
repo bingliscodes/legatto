@@ -47,10 +47,8 @@ async def process_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
     input_key = f"{track_id}/{audio_file.filename}"
     storage.write_file(input_key, data)
 
-    stems = storage.list_stems(track_id)
-    job_dir = STORAGE_ROOT / track_id
-    input_path = await save_file_to_disk(audio_file, job_dir)
-    stems_path = job_dir / "stems"
+    input_path = STORAGE_ROOT / input_key
+    stems_path = STORAGE_ROOT / track_id / "stems"
 
     # Create new track in DB before enqueuing task
     new_track = Track(id=track_id, display_name=audio_file.filename)
