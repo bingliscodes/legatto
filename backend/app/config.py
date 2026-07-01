@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     redis_url: str
     storage_dir: str = "storage"
 
+    device: str = "mps"
+
 
 settings = Settings()
 

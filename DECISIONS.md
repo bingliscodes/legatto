@@ -141,6 +141,28 @@ Split the model into Track (the user's reference, including a name, artist, uplo
 - Later on I could opt to go from exact-hash to acoustic fingerprint without changing schema. Rejected fingerprinting now because it's fuzzy (false positives on live/remaster/different masters) and only really worth the complexity at larger scale.
 - Chose to do the split now because it's cheap. No real data to migrate and retrofitting after real users exist involves moving files and backfilling hashes.
 
+### D11 — Production deploy architecture: serverless GPU, Celery, self-hosted on a droplet
+
+**Date:** 2026-07-01
+
+Going **straight to a full production deploy** (no thin spike). Four calls, made deliberately — several trade extra up-front work for either a hard product requirement or a concrete learning goal (the project's whole point).
+
+- **Compute — serverless GPU** (provider TBD: Modal / Replicate / RunPod). CPU separation on a plain droplet is ~5–10 min/song; **minutes-long turnaround is an unacceptable product UX**, so we jump to on-demand GPU (pay-per-second, ~pennies/song, fast). This **overrides** the earlier "deploy CPU first and measure" plan — the latency bar is a firm requirement, not an unknown to be measured.
+- **Object storage — S3 / DO Spaces (pulled forward from D9).** A serverless GPU is a _separate machine_ and can't touch the droplet's local disk, so input + stems must live in shared object storage. This turns the two D6/D9 seams real: a `Storage` impl (disk → Spaces) and a `Separator` impl (local demucs → remote GPU). No schema change — the DB already stores a storage-agnostic reference (D9).
+- **Queue — RQ → Celery** (broker + result backend on Redis). Primary driver: **Celery is a key technology Ben wants to learn** (also the more production-standard choice). Contained by the D5 work-vs-transport split — the separation _work_ function is unchanged; only the transport swaps. (The `SimpleWorker` non-forking constraint from D7 was macOS-specific; irrelevant on Linux.)
+- **Frontend — self-served off the droplet, not Vercel.** nginx serves the built SPA + reverse-proxies the API; TLS via Let's Encrypt. Deliberately hand-rolled: a PaaS abstracts away the serving / reverse-proxy / TLS / system-design concepts Ben wants to internalize.
+
+**Deploy target:** DigitalOcean droplet running Docker Compose (nginx + FastAPI API + Celery worker + Redis + Postgres); CI/CD via GitHub Actions; custom domain + HTTPS.
+
+**Build order (tracer-bullet — each step leaves a working system):**
+
+1. **Local refactors** (on the Mac): extract the `Separator` seam, extract the `Storage` seam, swap RQ → Celery — verify the pipeline still works locally before anything leaves the laptop.
+2. **Serverless GPU + object storage** (still driven from the Mac): `Storage` → Spaces, `Separator` → remote GPU; validate upload → Celery → GPU → stems-in-Spaces → served, all before touching a server. (De-risks the hard part without also fighting Docker/DNS.)
+3. **Containerize + droplet**: Dockerfiles + nginx + `compose.prod`; bring the droplet up **by hand**; DNS + TLS.
+4. **CI/CD**: GitHub Actions build → registry → droplet pull & restart. Automate the proven manual deploy.
+
+**Open sub-decisions:** serverless GPU provider (Modal vs. Replicate vs. RunPod); Postgres (self-hosted container vs. DO Managed); monthly cost ceiling.
+
 ---
 
 ## Build approach
@@ -163,11 +185,10 @@ Daily-habit features layered on the spine. (This is the "Slice N" numbering that
 
 4. **Slow-down + A–B looping** ✅ (D8) — pitch-preserving time-stretch (SoundTouchJS, offline pre-stretch) + native `loopStart`/`loopEnd`, on a musical-seconds transport (pause/resume/seek/tempo-change-in-place).
 5. **Revisitable track library** ✅ (D9) — DB-backed persistence so tracks survive refresh and don't re-separate. Upload optimistically prepends to the list; the list polls `GET /tracks` (self-terminating when nothing's `queued`/`processing`) so status flips live; `GET /tracks/{id}` returns a stems map and clicking a `completed` track loads it into the player. `useSeparationJob` and the `/jobs` endpoint fully retired — the DB is the sole source of truth for track state. Runtime end-to-end, static analysis, and prod build are green.
-6. **Deploy spike** 📋 planned — thin, throwaway-friendly deploy of the _current_ app (upload → separate → play) onto a candidate GPU host with real object storage. Goal: retire the biggest **unvalidated** risk — does `htdemucs_6s` run there, how slow, **cost per song**, cold-start behavior — _before_ investing in dedup. (Same tracer-bullet logic as the build: validate the scary unknown early and thin, not production-polished.)
-7. **Dedup via content hash** 📋 planned (D10) — split `Track` (user reference) / `Asset` (content-addressed artifact); skip re-separation on exact-file re-upload. Sequenced _after_ the spike so its ROI is grounded in real per-song cost. Acoustic fingerprinting deferred.
-8. **Ship it** 📋 planned — full production deploy; the stated end goal (CLAUDE.md). _Not purely a final step:_ several choices are already down payments on it — the `Storage` interface + storage-agnostic references (D6/D9) make disk→S3 a swap; the `Separator` interface (D6) makes local MPS→cloud GPU a swap; config is env-driven (pydantic-settings). **Open decisions:** hosting/deployment target; **where separation runs in prod** (local vs. rented vs. serverless GPU vs. managed API) + the **monthly cost ceiling**; secrets handling; prod Postgres / Redis / object storage; CORS + API base URL; HTTPS.
+6. **Production deploy** 🔨 next (D11) — full production path, going straight to production (no thin spike): **serverless GPU** compute, **Celery** on Redis, **object storage** (S3 / DO Spaces), **self-served frontend** (nginx) on a **DigitalOcean droplet** (Docker Compose), **CI/CD** via GitHub Actions, custom domain + HTTPS. Build order + rationale in D11.
+7. **Dedup via content hash** 📋 planned (D10) — split `Track` (user reference) / `Asset` (content-addressed artifact); skip re-separation on exact-file re-upload. With serverless GPU each separation is a metered per-call cost, so dedup saves real pennies + latency. Acoustic fingerprinting deferred.
 
-**Sequencing decided (2026-07-01):** finish the library slice → **deploy spike** (validate GPU hosting + per-song cost) → dedup → full ship. Rationale: GPU inference is the biggest unvalidated cost/technical risk, building more features doesn't shrink it, and the spike's real cost numbers are what make the dedup ROI call honest.
+**Sequencing decided (2026-07-01):** library ✅ → **full production deploy** (D11) → dedup → ongoing. The earlier "deploy CPU first, measure per-song cost, then decide GPU" plan was **overridden**: minutes-long CPU turnaround is an unacceptable product UX, so the serverless-GPU decision is made, not measured (D11).
 
 ---
 
@@ -175,4 +196,4 @@ Daily-habit features layered on the spine. (This is the "Slice N" numbering that
 
 - ~~Confirm SQLAlchemy + Alembic vs raw SQL for DB access.~~ **Resolved (2026-06-30):** SQLAlchemy + Alembic — see D9.
 - ~~Slice 2: confirm `htdemucs_6s` install path on Apple Silicon (torch + MPS).~~ **Resolved:** runs on MPS (~15s for a 64s track). Needs the `torchcodec` Python package **and** system `ffmpeg` — `torchaudio` 2.11 decodes audio via `torchcodec`, which links FFmpeg. (`ffmpeg` 8 worked despite torchcodec historically targeting 4–7.)
-- Hosting/deployment target + monthly cost ceiling — deferred until we approach a real deploy. See roadmap milestone 7 ("Ship it") for the full open-decision list.
+- Hosting/deployment target — decided; see D11 (serverless GPU, Celery, DO droplet, self-served frontend). Remaining open sub-decisions: GPU provider (Modal / Replicate / RunPod), Postgres (self-hosted container vs. DO Managed), monthly cost ceiling.
