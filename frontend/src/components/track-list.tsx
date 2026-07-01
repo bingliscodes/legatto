@@ -2,13 +2,14 @@ import { cn } from "@/lib/utils";
 
 import { type Track } from "@/lib/api";
 
-export default function TrackList({
-  tracks,
-  onSelect,
-}: {
+type SelectTrack = (track: Track) => void;
+
+type TrackListProps = {
   tracks: Track[];
-  onSelect: (track: Track) => void;
-}) {
+  onSelect: SelectTrack;
+};
+
+export default function TrackList({ tracks, onSelect }: TrackListProps) {
   if (tracks.length === 0) {
     return <div>No tracks yet</div>;
   }
@@ -22,13 +23,11 @@ export default function TrackList({
   );
 }
 
-function TrackItem({
-  track,
-  onSelect,
-}: {
+type TrackItemProps = {
   track: Track;
-  onSelect: (track: Track) => void;
-}) {
+  onSelect: SelectTrack;
+};
+function TrackItem({ track, onSelect }: TrackItemProps) {
   const isCompleted = track.status === "completed";
   return (
     <div
