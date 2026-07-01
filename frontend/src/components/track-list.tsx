@@ -7,8 +7,8 @@ export default function TrackList({ tracks }: { tracks: Track[] }) {
 
   return (
     <div>
-      {tracks.map((track, key) => (
-        <TrackItem key={key} track={track} />
+      {tracks.map((track) => (
+        <TrackItem key={track.id} track={track} />
       ))}
     </div>
   );
