@@ -122,7 +122,7 @@ function App() {
               loop={loop}
               setLoop={setLoop}
             />
-            {<TrackList tracks={tracks} />}
+            <TrackList tracks={tracks} />
 
             {loaded ? (
               <div className="space-y-2">
