@@ -1,6 +1,12 @@
 import { type Track } from "@/lib/api";
 
-export default function TrackList({ tracks }: { tracks: Track[] }) {
+export default function TrackList({
+  tracks,
+  onSelect,
+}: {
+  tracks: Track[];
+  onSelect: (track: Track) => void;
+}) {
   if (tracks.length === 0) {
     return <div>No tracks yet</div>;
   }
@@ -8,15 +14,24 @@ export default function TrackList({ tracks }: { tracks: Track[] }) {
   return (
     <div>
       {tracks.map((track) => (
-        <TrackItem key={track.id} track={track} />
+        <TrackItem key={track.id} track={track} onSelect={onSelect} />
       ))}
     </div>
   );
 }
 
-function TrackItem({ track }: { track: Track }) {
+function TrackItem({
+  track,
+  onSelect,
+}: {
+  track: Track;
+  onSelect: (track: Track) => void;
+}) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-md border px-4 py-3">
+    <div
+      onClick={() => onSelect(track)}
+      className="flex items-center justify-between gap-4 rounded-md border px-4 py-3"
+    >
       <div className="min-w-0">
         <p className="truncate font-medium">{track.display_name}</p>
         {track.artist && (
