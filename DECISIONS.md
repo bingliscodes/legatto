@@ -147,11 +147,27 @@ Split the model into Track (the user's reference, including a name, artist, uplo
 
 **Vertical slices, tracer-bullet first.** Build one thin end-to-end path before adding breadth.
 
-- **Slice 1 — Tracer bullet (skeleton with a _stub_ separator):** upload → job row → RQ enqueue → worker runs a fake "separator" → writes placeholder stems to storage → status endpoint reports done. Prove the _plumbing_ works end-to-end **before** introducing the slow/heavy real model. (This is why we can defer installing `torch`/`demucs` to Slice 2 — keeps Slice 1 light and isolates debugging.)
-- **Slice 2 — Real separation:** swap the stub for `htdemucs_6s` on MPS, behind the same `Separator` interface.
-- **Slice 3 — The player:** React + Web Audio multitrack player with per-stem mute/solo and synced playback (the MVP payoff).
-
 **Who writes what:** Claude scaffolds boilerplate (repo layout, dev infra, app bootstrap) and reviews. Ben writes the load-bearing logic (the upload/job/enqueue flow, the worker task, the storage & separator interfaces, the player audio logic).
+
+### MVP build slices (shipped)
+
+The MVP (D1) was built as three thin end-to-end slices:
+
+1. **Tracer bullet** ✅ — upload → job row → RQ enqueue → worker runs a _stub_ separator → placeholder stems → status endpoint reports done. Proved the plumbing end-to-end **before** the heavy model (which is why installing `torch`/`demucs` could be deferred to slice 2).
+2. **Real separation** ✅ — swapped the stub for `htdemucs_6s` on MPS, behind the same `Separator` interface.
+3. **The player** ✅ — React + Web Audio multitrack player, per-stem mute/solo, synced playback. **MVP payoff reached.**
+
+### Practice-feature roadmap (post-MVP)
+
+Daily-habit features layered on the spine. (This is the "Slice N" numbering that D1 and D8 refer to — distinct from the MVP build slices above.)
+
+4. **Slow-down + A–B looping** ✅ (D8) — pitch-preserving time-stretch (SoundTouchJS, offline pre-stretch) + native `loopStart`/`loopEnd`, on a musical-seconds transport (pause/resume/seek/tempo-change-in-place).
+5. **Revisitable track library** 🔨 _in progress_ (D9) — DB-backed persistence so tracks survive refresh and don't re-separate. **Done:** `tracks` table + Alembic migration, `GET`/`POST /tracks`, worker writes status to the DB, frontend list component wired to `GET /tracks`. **Next:** click a completed track → load its stems (step 3); repoint status polling onto the DB and retire `/jobs` (step 4).
+6. **Deploy spike** 📋 planned — thin, throwaway-friendly deploy of the _current_ app (upload → separate → play) onto a candidate GPU host with real object storage. Goal: retire the biggest **unvalidated** risk — does `htdemucs_6s` run there, how slow, **cost per song**, cold-start behavior — _before_ investing in dedup. (Same tracer-bullet logic as the build: validate the scary unknown early and thin, not production-polished.)
+7. **Dedup via content hash** 📋 planned (D10) — split `Track` (user reference) / `Asset` (content-addressed artifact); skip re-separation on exact-file re-upload. Sequenced _after_ the spike so its ROI is grounded in real per-song cost. Acoustic fingerprinting deferred.
+8. **Ship it** 📋 planned — full production deploy; the stated end goal (CLAUDE.md). _Not purely a final step:_ several choices are already down payments on it — the `Storage` interface + storage-agnostic references (D6/D9) make disk→S3 a swap; the `Separator` interface (D6) makes local MPS→cloud GPU a swap; config is env-driven (pydantic-settings). **Open decisions:** hosting/deployment target; **where separation runs in prod** (local vs. rented vs. serverless GPU vs. managed API) + the **monthly cost ceiling**; secrets handling; prod Postgres / Redis / object storage; CORS + API base URL; HTTPS.
+
+**Sequencing decided (2026-07-01):** finish the library slice → **deploy spike** (validate GPU hosting + per-song cost) → dedup → full ship. Rationale: GPU inference is the biggest unvalidated cost/technical risk, building more features doesn't shrink it, and the spike's real cost numbers are what make the dedup ROI call honest.
 
 ---
 
@@ -159,4 +175,4 @@ Split the model into Track (the user's reference, including a name, artist, uplo
 
 - ~~Confirm SQLAlchemy + Alembic vs raw SQL for DB access.~~ **Resolved (2026-06-30):** SQLAlchemy + Alembic — see D9.
 - ~~Slice 2: confirm `htdemucs_6s` install path on Apple Silicon (torch + MPS).~~ **Resolved:** runs on MPS (~15s for a 64s track). Needs the `torchcodec` Python package **and** system `ffmpeg` — `torchaudio` 2.11 decodes audio via `torchcodec`, which links FFmpeg. (`ffmpeg` 8 worked despite torchcodec historically targeting 4–7.)
-- Hosting/deployment target + monthly cost ceiling — deferred until we approach a real deploy.
+- Hosting/deployment target + monthly cost ceiling — deferred until we approach a real deploy. See roadmap milestone 7 ("Ship it") for the full open-decision list.
