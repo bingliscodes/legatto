@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/card";
 import { StemControl } from "@/components/stem-control";
 import { useAudioPlayer } from "@/hooks/use-audio-player";
-import { useSeparationJob } from "@/hooks/use-separation-job";
 import { useLibrary } from "@/hooks/use-library";
 import { API_BASE, getTrack, type Track } from "./lib/api";
 import Playhead from "./components/playhead";
@@ -38,8 +37,8 @@ function App() {
     seek,
     loop,
   } = useAudioPlayer();
-  const { upload, status, stems } = useSeparationJob();
-  const { tracks } = useLibrary();
+
+  const { upload, uploadStatus, tracks } = useLibrary();
 
   function loadFromStems(stems: Record<string, string>) {
     const absolute_paths = Object.fromEntries(

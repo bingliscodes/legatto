@@ -1,22 +1,20 @@
 // Hook designed to own the list of tracks
 import { useCallback, useState, useEffect } from "react";
-import { getTracks, uploadTrack, getJob, type Track } from "@/lib/api";
+import { getTracks, uploadTrack, type Track } from "@/lib/api";
 
 export function useLibrary() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
-  const [status, setStatus] = useState<string>("idle");
-  const [stems, setStems] = useState<JobStatus["stems"]>(null);
+  const [uploadStatus, setUploadStatus] = useState<string>("idle");
 
   async function upload(file: File) {
-    setStatus("uploading");
-    setStems(null);
+    setUploadStatus("uploading");
     try {
-      const job = await uploadTrack(file);
-      setJobId(job.id);
+      const track = await uploadTrack(file);
+      setTracks((prev) => [track, ...prev]);
     } catch (err) {
       console.error("upload failed:", err);
-      setStatus("error");
+      setUploadStatus("error");
     }
   }
 
@@ -29,30 +27,27 @@ export function useLibrary() {
     }
   }, []);
 
-  // Poll while there's a job that isn't done yet.
+  // Poll the list (GET /tracks) while any track is still queued/processing.
   useEffect(() => {
-    if (!jobId) return;
-
     const interval = setInterval(async () => {
       try {
-        const job = await getJob(jobId);
-        setStatus(job.status);
-
-        if (job.status === "finished") setStems(job.stems);
-        if (job.status === "finished" || job.status === "failed")
-          clearInterval(interval);
+        const tracks = await getTracks();
+        const hasPending = tracks.some(
+          (track) => track.status === "queued" || track.status === "processing",
+        );
+        if (!hasPending) clearInterval(interval);
       } catch (err) {
         console.error("poll failed:", err);
-        setStatus("error");
+        setUploadStatus("error");
         clearInterval(interval);
       }
     }, 1500);
 
     return () => clearInterval(interval);
-  }, [jobId]);
+  }, [tracks]);
 
   useEffect(() => {
     refresh();
   }, [refresh]);
-  return { tracks, refresh, upload, status, stems };
+  return { tracks, refresh, upload, uploadStatus };
 }
