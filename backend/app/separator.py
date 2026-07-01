@@ -24,14 +24,9 @@ class Separator(ABC):
 class LocalSeparator(Separator):
     def __init__(self, device: str):
         self.device = device
-        self.model = get_model("htdemucs_6s").to("mps").eval()
+        self.model = get_model("htdemucs_6s").to(self.device).eval()
 
     def separate(self, input_path: Path, output_dir: Path) -> list[str]:
-        # MOVE HERE: the body of the old stem_separator, MINUS all DB code —
-        #   AudioFile(...).read(...) → normalize → torch.no_grad()/apply_model(
-        #       ..., device=self.device, ...) → un-normalize → save_audio loop.
-        # Then: return the stem names you wrote (e.g. list(self.model.sources)).
-
         wav = AudioFile(input_path).read(
             streams=0,
             samplerate=self.model.samplerate,
