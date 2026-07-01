@@ -69,8 +69,7 @@ def get_track(track_id: str, db: Session = Depends(get_db)):
         stems_dir = (STORAGE_ROOT / track_id / "stems").resolve()
         for file_path in stems_dir.iterdir():
             if file_path.is_file():
-                full_path = (stems_dir / file_path.name).resolve()
-                stems[file_path.stem] = full_path
+                stems[file_path.stem] = f"/tracks/{track_id}/stems/{file_path.name}"
 
     return TrackDetailResponse(
         **TrackResponse.model_validate(track).model_dump(), stems=stems
