@@ -27,7 +27,9 @@ class LocalStorage(Storage):
         p.write_bytes(data)
 
     def list_stems(self, track_id):
-        return [f.name for f in (STORAGE_ROOT / track_id / "stems").glob("*.wav")]
+        return sorted(
+            [f.name for f in (STORAGE_ROOT / track_id / "stems").glob("*.wav")]
+        )
 
     def open(self, key):
         return (STORAGE_ROOT / key).read_bytes()
