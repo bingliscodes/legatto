@@ -12,3 +12,7 @@ class TrackResponse(BaseModel):
     artist: str | None
     status: TrackStatus
     created_at: datetime
+
+
+class TrackDetailResponse(TrackResponse):
+    stems: dict[str, str]

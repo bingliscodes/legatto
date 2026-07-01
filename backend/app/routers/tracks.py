@@ -10,7 +10,7 @@ from app.tasks import stem_separator
 from app.config import STORAGE_ROOT
 from app.database import get_db
 from app.models.track import Track
-from app.schemas.track import TrackResponse
+from app.schemas.track import TrackResponse, TrackDetailResponse
 
 router = APIRouter(prefix="/tracks")
 
@@ -55,6 +55,24 @@ async def process_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
         stem_separator, track_id, input_path, stems_path, job_id=track_id
     )
     return new_track
+
+
+@router.get("/{track_id}", response_model=TrackDetailResponse)
+def get_track(track_id: str, db: Session = Depends(get_db)):
+    track = db.get(Track, track_id)
+
+    if not track:
+        raise HTTPException(status_code=404)
+
+    stems = {}
+    if track.status == "completed":
+        stems_dir = (STORAGE_ROOT / track_id / "stems").resolve()
+        for file_path in stems_dir.iterdir():
+            if file_path.is_file():
+                full_path = (stems_dir / file_path.name).resolve()
+                stems[file_path.stem] = full_path
+
+    return TrackDetailResponse(track=track, stems=stems)
 
 
 @router.get("/{track_id}/stems/{filename}")
