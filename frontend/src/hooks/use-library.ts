@@ -16,6 +16,6 @@ export function useLibrary() {
 
   useEffect(() => {
     refresh();
-  }, []);
+  }, [refresh]);
   return { tracks, refresh };
 }
