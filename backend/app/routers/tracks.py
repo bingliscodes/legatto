@@ -11,7 +11,7 @@ from app.tasks import stem_separator
 from app.config import STORAGE_ROOT
 from app.database import get_db
 from app.models.track import Track
-from app.schemas.track import TrackResponse, TrackDetailResponse
+from app.schemas.track import TrackResponse, TrackDetailResponse, TrackStatus
 
 router = APIRouter(prefix="/tracks")
 
@@ -64,9 +64,9 @@ def get_track(track_id: str, db: Session = Depends(get_db)):
 
     if not track:
         raise HTTPException(status_code=404)
-
     stems = {}
-    if track.status == "completed":
+    if track.status == TrackStatus("completed"):
+        print("here")
         stems_dir = (STORAGE_ROOT / track_id / "stems").resolve()
         for file_path in sorted(stems_dir.glob("*.wav")):
             if file_path.is_file():
