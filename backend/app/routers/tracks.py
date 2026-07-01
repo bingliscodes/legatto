@@ -72,7 +72,9 @@ def get_track(track_id: str, db: Session = Depends(get_db)):
                 full_path = (stems_dir / file_path.name).resolve()
                 stems[file_path.stem] = full_path
 
-    return TrackDetailResponse(track=track, stems=stems)
+    return TrackDetailResponse(
+        **TrackResponse.model_validate(track).model_dump(), stems=stems
+    )
 
 
 @router.get("/{track_id}/stems/{filename}")
