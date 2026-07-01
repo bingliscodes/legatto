@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { stretchBuffer } from "@/lib/stretch";
 
-// stem name -> URL, matching the `stems` dict returned by GET /jobs/{id}
+// stem name -> URL, matching the `stems` dict returned by GET /tracks/{id}
 type Stems = Record<string, string>;
 type StemUI = { volume: number; muted: boolean };
 export type Loop = { active: boolean; start: number; end: number };
