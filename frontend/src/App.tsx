@@ -46,8 +46,6 @@ function App() {
       Object.entries(stems).map(([name, url]) => [name, `${API_BASE}${url}`]),
     );
     load(absolute_paths);
-    // Intentionally runs only when `stems` changes; `load` is stable in behavior.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }
 
   async function handleTrackClick(track: Track) {
@@ -58,6 +56,8 @@ function App() {
   useEffect(() => {
     if (!stems) return;
     loadFromStems(stems);
+    // Intentionally runs only when `stems` changes; `load` is stable in behavior.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stems]);
 
   const stemNames = Object.keys(stemState);
@@ -131,10 +131,7 @@ function App() {
               loop={loop}
               setLoop={setLoop}
             />
-            <TrackList
-              tracks={tracks}
-              onSelect={(track) => handleTrackClick(track)}
-            />
+            <TrackList tracks={tracks} onSelect={handleTrackClick} />
 
             {loaded ? (
               <div className="space-y-2">
