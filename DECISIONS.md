@@ -138,7 +138,8 @@ Split the model into Track (the user's reference, including a name, artist, uplo
 
 - Multiple Tracks can share one asset
 - GPU/CPU stem separation is the most expensive part of the system. Hashing content is cheap and makes uploads idempotent.
-- Later on I could opt to go from exact-hash to acoustic fingerprint without changing schema.
+- Later on I could opt to go from exact-hash to acoustic fingerprint without changing schema. Rejected fingerprinting now because it's fuzzy (false positives on live/remaster/different masters) and only really worth the complexity at larger scale.
+- Chose to do the split now because it's cheap. No real data to migrate and retrofitting after real users exist involves moving files and backfilling hashes.
 
 ---
 
