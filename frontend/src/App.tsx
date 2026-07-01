@@ -56,13 +56,6 @@ function App() {
     }
   }
 
-  useEffect(() => {
-    if (!stems) return;
-    loadFromStems(stems);
-    // Intentionally runs only when `stems` changes; `load` is stable in behavior.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stems]);
-
   const stemNames = Object.keys(stemState);
   const loaded = stemNames.length > 0;
 
@@ -92,7 +85,7 @@ function App() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <p className="text-sm text-muted-foreground">{status}</p>
+            <p className="text-sm text-muted-foreground">{uploadStatus}</p>
             <div className="flex gap-2">
               <input
                 type="file"
