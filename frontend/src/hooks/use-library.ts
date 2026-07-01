@@ -10,7 +10,7 @@ export function useLibrary() {
       const tracks = await getTracks();
       setTracks(tracks);
     } catch (err) {
-      console.log("Refresh tracks failed:", err);
+      console.error("Refresh tracks failed:", err);
     }
   }, []);
 
