@@ -104,7 +104,7 @@ For pitch-preserving slow-down (product Slice 2), use **SoundTouchJS** (WSOLA-ba
 
 **Why:**
 
-- `playbackRate` resamples → it changes *pitch* along with speed (chipmunk effect). Unusable for learning a part.
+- `playbackRate` resamples → it changes _pitch_ along with speed (chipmunk effect). Unusable for learning a part.
 - **Quality:** confirmed by ear — good enough from ~**0.5× up** on the real (already-separated) stems, which covers the practice range. The stem-separation artifacts are the weaker link in the chain anyway, so a higher-end stretcher's edge is partly masked.
 - **Licensing was decisive.** Rejected **Rubber Band** despite its higher quality because it's **GPL / commercial dual-licensed** — copyleft conflicts with the "ship it eventually" goal (would force open-sourcing or a paid license). SoundTouch is **LGPL** (usable in a closed app). Tone.js (MIT) was the framework alternative but would mean rebuilding the hand-built audio engine.
 - Keeps the existing raw Web Audio engine; SoundTouch slots in.
@@ -127,6 +127,18 @@ After Slice 2, the next slice is a **revisitable track library**: upload adds a 
 - The **frontend lists/polls the DB** (`GET /tracks`, `GET /tracks/{id}`) instead of RQ. RQ stays purely the execution mechanism; the DB owns state. (The D5 "work vs transport" split paying off — the work now reports to a durable store.)
 
 **Stems stay on local disk; S3 deferred to the deploy slice.** Disk already survives a refresh (only status was ephemeral); S3's value is durability across machines/restarts, which only matters on ephemeral/serverless compute (a hosting concern). Keeping the deferral cheap: the DB stores a **storage-agnostic reference** (`track_id`/key), never a filesystem path and never the bytes, and all I/O stays behind the `Storage` interface (D6). Then disk → S3 later is a new `Storage` impl + URL strategy (proxy or presigned), not a schema or API-contract change.
+
+### D10 — Dedup separation by content hash: split model into Track and Asset
+
+**Date:** 2026-07-01
+
+Split the model into Track (the user's reference, including a name, artist, uploader, and timestamp) and Asset (hash key, status, stems). The Track is the user's reference and the Asset is the computed product.
+
+**Why:**
+
+- Multiple Tracks can share one asset
+- GPU/CPU stem separation is the most expensive part of the system. Hashing content is cheap and makes uploads idempotent.
+- Later on I could opt to go from exact-hash to acoustic fingerprint without changing schema.
 
 ---
 
