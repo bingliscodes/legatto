@@ -65,7 +65,7 @@ def get_track(track_id: str, db: Session = Depends(get_db)):
     if not track:
         raise HTTPException(status_code=404)
     stems = {}
-    if track.status == TrackStatus("completed"):
+    if track.status == TrackStatus.completed:
         print("here")
         stems_dir = (STORAGE_ROOT / track_id / "stems").resolve()
         for file_path in sorted(stems_dir.glob("*.wav")):
