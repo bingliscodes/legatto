@@ -19,7 +19,7 @@ def stem_separator(track_id: str, input_path: str, output_directory: str):
             db.commit()
 
             # Processing work
-            get_separator().separate(Path(input_path, Path(output_directory)))
+            get_separator().separate(Path(input_path), Path(output_directory))
 
             track.status = TrackStatus.completed
             db.commit()
