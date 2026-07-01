@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from uuid import uuid4
 from pathlib import Path
+import uuid
 
 from app.queue import task_queue
 from app.tasks import stem_separator
@@ -59,7 +60,7 @@ async def process_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
 
 @router.get("/{track_id}", response_model=TrackDetailResponse)
 def get_track(track_id: str, db: Session = Depends(get_db)):
-    track = db.get(Track, track_id)
+    track = db.get(Track, uuid.UUID(track_id))
 
     if not track:
         raise HTTPException(status_code=404)
