@@ -5,8 +5,11 @@ from app.config import STORAGE_ROOT
 
 class Storage(ABC):
     @abstractmethod
-    def write_file(self, file_contents: bytes) -> None:
-        """Writes file contents to persistent storage"""
+    def write_file(self, key: str, data: bytes) -> None:
+        """Writes file contents to persistent storage
+        key: string representing the whole file e.g., {track_id}/{filename}
+        data: raw bytes representing file contents
+        """
         raise NotImplementedError
 
     @abstractmethod
@@ -19,4 +22,10 @@ class Storage(ABC):
 
 
 class LocalStorage(Storage):
-    pass
+    def write_file(self, key, data):
+        p = STORAGE_ROOT / key
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_bytes(data)
+
+    def list_stems(self, track_id):
+        return [f.name for f in (STORAGE_ROOT / track_id / "stems").glob("*.wav")]
