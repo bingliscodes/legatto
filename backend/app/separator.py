@@ -23,6 +23,7 @@ class LocalSeparator(Separator):
         self.model = get_model("htdemucs_6s").to(self.device).eval()
 
     def separate(self, input_path: Path, output_dir: Path) -> list[str]:
+        output_dir.mkdir(parents=True, exist_ok=True)
         wav = AudioFile(input_path).read(
             streams=0,
             samplerate=self.model.samplerate,
