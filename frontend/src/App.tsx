@@ -49,8 +49,12 @@ function App() {
   }
 
   async function handleTrackClick(track: Track) {
-    const trackDetails = await getTrack(track.id);
-    loadFromStems(trackDetails.stems);
+    try {
+      const trackDetails = await getTrack(track.id);
+      loadFromStems(trackDetails.stems);
+    } catch (err) {
+      console.error("Fetching track failed:", err);
+    }
   }
 
   useEffect(() => {
