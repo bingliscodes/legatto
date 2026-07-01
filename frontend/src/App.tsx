@@ -13,7 +13,7 @@ import { StemControl } from "@/components/stem-control";
 import { useAudioPlayer } from "@/hooks/use-audio-player";
 import { useSeparationJob } from "@/hooks/use-separation-job";
 import { useLibrary } from "@/hooks/use-library";
-import { API_BASE } from "./lib/api";
+import { API_BASE, getTrack, type Track } from "./lib/api";
 import Playhead from "./components/playhead";
 import TrackList from "./components/track-list";
 
@@ -48,6 +48,11 @@ function App() {
     load(absolute_paths);
     // Intentionally runs only when `stems` changes; `load` is stable in behavior.
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }
+
+  async function handleTrackClick(track: Track) {
+    const trackDetails = await getTrack(track.id);
+    loadFromStems(trackDetails.stems);
   }
 
   useEffect(() => {
@@ -126,7 +131,10 @@ function App() {
               loop={loop}
               setLoop={setLoop}
             />
-            <TrackList tracks={tracks} />
+            <TrackList
+              tracks={tracks}
+              onSelect={(track) => handleTrackClick(track)}
+            />
 
             {loaded ? (
               <div className="space-y-2">
