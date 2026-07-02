@@ -5,14 +5,14 @@ from demucs.apply import apply_model
 from demucs.audio import AudioFile, save_audio
 import torch
 
-from app.config import settings
+from app.config import settings, STORAGE_ROOT
 
 
 class Separator(ABC):
 
     @abstractmethod
     def separate(
-        self, input_path: Path, output_dir: Path
+        self, input_key: str, output_prefix: str
     ) -> list[str]:  # returns stem names written
         raise NotImplementedError
 
@@ -22,7 +22,9 @@ class LocalSeparator(Separator):
         self.device = device
         self.model = get_model("htdemucs_6s").to(self.device).eval()
 
-    def separate(self, input_path: Path, output_dir: Path) -> list[str]:
+    def separate(self, input_key: str, output_prefix: str) -> list[str]:
+        output_dir = (STORAGE_ROOT / output_prefix).resolve()
+        input_path = (STORAGE_ROOT / input_path).resolve()
         output_dir.mkdir(parents=True, exist_ok=True)
         wav = AudioFile(input_path).read(
             streams=0,
@@ -54,6 +56,14 @@ class LocalSeparator(Separator):
                 samplerate=self.model.samplerate,
             )
         return list(self.model.sources)
+
+
+class RunPodSeparator(Separator):
+    def __init__(self):
+        pass
+
+    def separate(self, input_key: str, output_prefix: str) -> list[str]:
+        
 
 
 _separator: Separator | None = None
