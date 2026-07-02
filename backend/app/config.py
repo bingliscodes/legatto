@@ -16,9 +16,9 @@ class Settings(BaseSettings):
     storage_backend: str = (
         "local"  # "local" | "s3" — the selector get_storage() branches on
     )
-    spaces_bucket: str = "legatto"
-    spaces_region: str = "sfo3"
-    spaces_endpoint: str = "https://sfo3.digitaloceanspaces.com"
+    spaces_bucket: str = ""
+    spaces_region: str = ""
+    spaces_endpoint: str = ""
     spaces_key: str = ""
     spaces_secret: str = ""
 
