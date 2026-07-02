@@ -156,7 +156,7 @@ Going **straight to a full production deploy** (no thin spike). Four calls, made
 
 **Build order (tracer-bullet — each step leaves a working system):**
 
-1. **Local refactors** (on the Mac): `Separator` seam ✅, `Storage` seam 🔨 (built; pending traversal-guard + error-handling fixes), RQ → Celery ⬜ — verify the pipeline still works locally before anything leaves the laptop.
+1. **Local refactors** (on the Mac): `Separator` seam ✅, `Storage` seam ✅, RQ → Celery 🔨 — verify the pipeline still works locally before anything leaves the laptop.
 2. **Serverless GPU + object storage** (still driven from the Mac): `Storage` → Spaces, `Separator` → remote GPU; validate upload → Celery → GPU → stems-in-Spaces → served, all before touching a server. (De-risks the hard part without also fighting Docker/DNS.)
 3. **Containerize + droplet**: Dockerfiles + nginx + `compose.prod`; bring the droplet up **by hand**; DNS + TLS.
 4. **CI/CD**: GitHub Actions build → registry → droplet pull & restart. Automate the proven manual deploy.
