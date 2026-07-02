@@ -61,15 +61,16 @@ class LocalSeparator(Separator):
 
 class RunPodSeparator(Separator):
     def __init__(self):
-        runpod.api.key = settings.runpod_api_key
+        runpod.api_key = settings.runpod_api_key
         self.endpoint = runpod.Endpoint(settings.runpod_endpoint_id)
 
     def separate(self, input_key: str, output_prefix: str) -> list[str]:
         payload = {"input_key": input_key, "output_prefix": output_prefix}
         res = self.endpoint.run_sync(payload, timeout=300)
-        output = res["output"]
-        stems = output.get("stems", [])
-        return stems
+        if not res or "stems" not in res:
+            raise RuntimeError(f"RunPod separation failed: {res}")
+
+        return res["stems"]
 
 
 _separator: Separator | None = None
