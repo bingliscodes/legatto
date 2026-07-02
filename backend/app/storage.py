@@ -13,11 +13,11 @@ class Storage(ABC):
 
     @abstractmethod
     def list_stems(self, track_id: str) -> list[str]:
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def open(self, key: str) -> bytes:
-        pass
+        raise NotImplementedError
 
 
 class LocalStorage(Storage):
