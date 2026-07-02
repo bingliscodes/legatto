@@ -1,0 +1,4 @@
+python-dotenv
+demucs
+boto3
+runpod
