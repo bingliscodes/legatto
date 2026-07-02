@@ -32,8 +32,8 @@ def handler(event):
         input_key = job["input_key"]
         output_prefix = job["output_prefix"]
         file_name = Path(input_key).name
-        local_input = (tmp / file_name).resolve()
-        s3.download_file(Bucket=BUCKET, Key=input_key, Filename=local_input)
+        local_input = tmp / file_name
+        s3.download_file(Bucket=BUCKET, Key=input_key, Filename=str(local_input))
 
 
 runpod.serverless.start({"handler": handler})
