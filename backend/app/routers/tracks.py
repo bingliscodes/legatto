@@ -1,5 +1,5 @@
 from fastapi import UploadFile, APIRouter, HTTPException, Depends
-from fastapi.responses import FileResponse
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from uuid import uuid4
@@ -80,4 +80,8 @@ def get_track(track_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{track_id}/stems/{filename}")
 def get_stem(track_id: str, filename: str):
-    return storage.open(f"{track_id}/stems/{filename}")
+    try:
+        file_bytes = storage.open(f"{track_id}/stems/{filename}")
+        return Response(content=file_bytes, media_type="audio/wav")
+    except PermissionError as err:
+        print(f"Permission error: {err}")
