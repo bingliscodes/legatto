@@ -5,8 +5,10 @@ from app.database import SessionLocal
 import uuid
 from app.separator import get_separator
 from app.models.track import Track, TrackStatus
+from app.celery_app import celery_app
 
 
+@celery_app.task
 def stem_separator(track_id: str, input_path: str, output_directory: str):
     """Creates a new file for each instrument"""
     db = SessionLocal()
