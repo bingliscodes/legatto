@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     storage_backend: str = (
         "local"  # "local" | "s3" — the selector get_storage() branches on
     )
+
+    separator: str = "local"
+
     spaces_bucket: str = ""
     spaces_region: str = ""
     spaces_endpoint: str = ""
