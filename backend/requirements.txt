@@ -13,3 +13,4 @@ pydantic-settings
 celery[redis]
 celery-types
 boto3
+runpod

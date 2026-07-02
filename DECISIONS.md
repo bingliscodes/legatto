@@ -147,7 +147,7 @@ Split the model into Track (the user's reference, including a name, artist, uplo
 
 Going **straight to a full production deploy** (no thin spike). Four calls, made deliberately — several trade extra up-front work for either a hard product requirement or a concrete learning goal (the project's whole point).
 
-- **Compute — serverless GPU** (provider TBD: Modal / Replicate / RunPod). CPU separation on a plain droplet is ~5–10 min/song; **minutes-long turnaround is an unacceptable product UX**, so we jump to on-demand GPU (pay-per-second, ~pennies/song, fast). This **overrides** the earlier "deploy CPU first and measure" plan — the latency bar is a firm requirement, not an unknown to be measured.
+- **Compute — serverless GPU** (provider: **RunPod serverless**, locked 2026-07-02 — chosen over Modal for the deeper container/infra learning + lower per-second cost; RunPod serverless is *not* k8s). CPU separation on a plain droplet is ~5–10 min/song; **minutes-long turnaround is an unacceptable product UX**, so we jump to on-demand GPU (pay-per-second, ~pennies/song, fast). This **overrides** the earlier "deploy CPU first and measure" plan — the latency bar is a firm requirement, not an unknown to be measured.
 - **Object storage — S3 / DO Spaces (pulled forward from D9).** A serverless GPU is a _separate machine_ and can't touch the droplet's local disk, so input + stems must live in shared object storage. This turns the two D6/D9 seams real: a `Storage` impl (disk → Spaces) and a `Separator` impl (local demucs → remote GPU). No schema change — the DB already stores a storage-agnostic reference (D9).
 - **Queue — RQ → Celery** (broker + result backend on Redis). Primary driver: **Celery is a key technology Ben wants to learn** (also the more production-standard choice). Contained by the D5 work-vs-transport split — the separation _work_ function is unchanged; only the transport swaps. (The `SimpleWorker` non-forking constraint from D7 was macOS-specific; irrelevant on Linux.)
 - **Frontend — self-served off the droplet, not Vercel.** nginx serves the built SPA + reverse-proxies the API; TLS via Let's Encrypt. Deliberately hand-rolled: a PaaS abstracts away the serving / reverse-proxy / TLS / system-design concepts Ben wants to internalize.
@@ -156,12 +156,12 @@ Going **straight to a full production deploy** (no thin spike). Four calls, made
 
 **Build order (tracer-bullet — each step leaves a working system):**
 
-1. **Local refactors** (on the Mac): `Separator` seam ✅, `Storage` seam ✅, RQ → Celery 🔨 — verify the pipeline still works locally before anything leaves the laptop.
+1. **Local refactors** (on the Mac) ✅ — `Separator` seam, `Storage` seam, and RQ → Celery all done; local pipeline verified end-to-end through the Celery worker (`--pool=solo`).
 2. **Serverless GPU + object storage** (still driven from the Mac): `Storage` → Spaces, `Separator` → remote GPU; validate upload → Celery → GPU → stems-in-Spaces → served, all before touching a server. (De-risks the hard part without also fighting Docker/DNS.)
 3. **Containerize + droplet**: Dockerfiles + nginx + `compose.prod`; bring the droplet up **by hand**; DNS + TLS.
 4. **CI/CD**: GitHub Actions build → registry → droplet pull & restart. Automate the proven manual deploy.
 
-**Open sub-decisions:** serverless GPU provider (Modal vs. Replicate vs. RunPod); Postgres (self-hosted container vs. DO Managed); monthly cost ceiling.
+**Open sub-decisions:** Postgres (self-hosted container vs. DO Managed); monthly cost ceiling. _(GPU provider resolved 2026-07-02: RunPod serverless.)_
 
 ---
 
