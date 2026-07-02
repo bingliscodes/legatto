@@ -35,5 +35,37 @@ def handler(event):
         local_input = tmp / file_name
         s3.download_file(Bucket=BUCKET, Key=input_key, Filename=str(local_input))
 
+        output_prefix.mkdir(parents=True, exist_ok=True)
+        wav = AudioFile(local_input).read(
+            streams=0,
+            samplerate=_model.samplerate,
+            channels=_model.audio_channels,
+        )
+        ref = wav.mean(0)
+        wav = (wav - ref.mean()) / ref.std()  # demucs normalizes by the mix's mean/std
+
+        with torch.no_grad():
+            sources = apply_model(
+                _model,
+                wav[None],
+                device="cuda",
+                shifts=1,
+                overlap=0.25,
+            )[
+                0
+            ]  # wav[None] adds a batch dim
+
+        sources = sources * ref.std() + ref.mean()  # un-normalize
+
+        for name, source in zip(
+            _model.sources, sources
+        ):  # model.sources == the 6 stem names
+            save_audio(
+                source,
+                str(Path(output_prefix) / f"{name}.wav"),
+                samplerate=_model.samplerate,
+            )
+        return list(_model.sources)
+
 
 runpod.serverless.start({"handler": handler})
