@@ -82,7 +82,7 @@ def get_separator() -> Separator:
         if settings.separator == "runpod":
             _separator = RunPodSeparator()
         elif settings.separator == "local":
-            _separator = LocalSeparator()
+            _separator = LocalSeparator(device=settings.device)
         else:
             raise ValueError(f"unknown separator: {settings.separator}")
     return _separator
