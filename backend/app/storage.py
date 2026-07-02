@@ -74,7 +74,7 @@ class S3Storage(Storage):
 
     def open(self, key: str) -> bytes:
         try:
-            self.client.get_object(Bucket=self.bucket, Key=key)["Body"].read()
+            return self.client.get_object(Bucket=self.bucket, Key=key)["Body"].read()
         except ClientError as e:
             if e.response["Error"]["Code"] in ("NoSuchKey", "404"):
                 raise FileNotFoundError(key)
@@ -89,6 +89,8 @@ def get_storage() -> Storage:
     if _storage is None:
         if settings.storage_backend == "s3":
             _storage = S3Storage()
-        if settings.storage_backend == "local":
+        elif settings.storage_backend == "local":
             _storage = LocalStorage()
+        else:
+            raise ValueError(f"unknown storage_backend: {settings.storage_backend}")
     return _storage
