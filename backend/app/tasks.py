@@ -21,7 +21,9 @@ def stem_separator(track_id: str, input_path: str, output_directory: str):
             db.commit()
 
             # Processing work
-            get_separator().separate(Path(input_path), Path(output_directory))
+            input_key = f"{track_id}/{input_path.filename}"
+            output_prefix = f"{track_id}/stems"
+            get_separator().separate(input_key, output_prefix)
 
             track.status = TrackStatus.completed
             db.commit()
