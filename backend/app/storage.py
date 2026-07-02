@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
+import boto3
+from pathlib import Path
+
 from app.config import STORAGE_ROOT
 from app.config import settings
-import boto3
 
 
 class Storage(ABC):
@@ -62,11 +64,13 @@ class S3Storage(Storage):
         res = self.client.list_objects_v2(
             Bucket=self.bucket, Prefix=f"{track_id}/stems/"
         )
-        if not res["Contents"]:
+        contents = res.get("Contents", [])
+
+        if not contents:
             return []
 
         contents = res["Contents"]
-        return sorted([i["Key"] for i in contents])
+        return sorted([Path(i["Key"]).name for i in contents])
 
     def open(self, key: str) -> bytes:
         return self.client.get_object(Bucket=self.bucket, Key=key)["Body"].read()
