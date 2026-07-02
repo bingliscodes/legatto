@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from app.config import STORAGE_ROOT
+from pathlib import Path
 
 
 class Storage(ABC):
@@ -32,7 +33,13 @@ class LocalStorage(Storage):
         )
 
     def open(self, key):
-        # TODO: Add traversal guard
+        # directory-traversal guard
+        safe_input = Path(key).resolve().parent
+        target_path = (STORAGE_ROOT / key).resolve()
+
+        if not target_path.is_relative_to(safe_input) or not target_path.is_file():
+            raise PermissionError("Directory traversal attempt detected!")
+
         return (STORAGE_ROOT / key).read_bytes()
 
 

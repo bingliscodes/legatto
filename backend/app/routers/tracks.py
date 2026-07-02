@@ -86,4 +86,4 @@ def get_stem(track_id: str, filename: str):
     if not path.is_relative_to(stems_dir) or not path.is_file():
         raise HTTPException(status_code=404)
 
-    return FileResponse(path)
+    return storage.open(f"{track_id}/stems/{filename}")
