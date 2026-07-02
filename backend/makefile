@@ -2,4 +2,4 @@ dev:
 	uvicorn app.main:app --reload
 
 worker:
-	rq worker --worker-class rq.SimpleWorker
+	celery -A app.celery_app worker --loglevel=info --pool=solo
