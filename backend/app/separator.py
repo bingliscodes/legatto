@@ -5,7 +5,7 @@ from demucs.apply import apply_model
 from demucs.audio import AudioFile, save_audio
 import torch
 
-from app.config import settings, SHIFTS, OVERLAP
+from app.config import settings
 
 
 class Separator(ABC):
@@ -37,8 +37,8 @@ class LocalSeparator(Separator):
                 self.model,
                 wav[None],
                 device=self.device,
-                shifts=SHIFTS,
-                overlap=OVERLAP,
+                shifts=settings.shifts,
+                overlap=settings.overlap,
             )[
                 0
             ]  # wav[None] adds a batch dim
