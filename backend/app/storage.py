@@ -42,6 +42,17 @@ class LocalStorage(Storage):
         return target.read_bytes()
 
 
+class S3Storage(Storage):
+    def write_file(self, key, data):
+        return super().write_file(key, data)
+
+    def list_stems(self, track_id):
+        return super().list_stems(track_id)
+
+    def open(self, key):
+        return super().open(key)
+
+
 _storage: Storage | None = None
 
 
