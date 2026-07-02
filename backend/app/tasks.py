@@ -9,7 +9,7 @@ from app.celery_app import celery_app
 
 
 @celery_app.task
-def stem_separator(track_id: str, input_path: str, output_directory: str):
+def stem_separator(track_id: str, input_key: str, output_prefix: str):
     """Creates a new file for each instrument"""
     db = SessionLocal()
     try:
@@ -21,8 +21,6 @@ def stem_separator(track_id: str, input_path: str, output_directory: str):
             db.commit()
 
             # Processing work
-            input_key = f"{track_id}/{input_path.filename}"
-            output_prefix = f"{track_id}/stems"
             get_separator().separate(input_key, output_prefix)
 
             track.status = TrackStatus.completed
