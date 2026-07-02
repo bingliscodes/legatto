@@ -69,10 +69,5 @@ def handler(event):
                 samplerate=model.samplerate,
             )
 
-        # Write the stems
-        for stem in list(model.sources):
-            data = file_name.read()
-            s3.put_object(Bucket=BUCKET, Key=local_input, Body=data)
-
 
 runpod.serverless.start({"handler": handler})
