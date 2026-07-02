@@ -12,3 +12,4 @@ psycopg2-binary
 pydantic-settings
 celery[redis]
 celery-types
+boto3
