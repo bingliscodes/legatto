@@ -157,7 +157,7 @@ Going **straight to a full production deploy** (no thin spike). Four calls, made
 **Build order (tracer-bullet — each step leaves a working system):**
 
 1. **Local refactors** (on the Mac) ✅ — `Separator` seam, `Storage` seam, and RQ → Celery all done; local pipeline verified end-to-end through the Celery worker (`--pool=solo`).
-2. **Serverless GPU + object storage** (still driven from the Mac): `Storage` → Spaces, `Separator` → remote GPU; validate upload → Celery → GPU → stems-in-Spaces → served, all before touching a server. (De-risks the hard part without also fighting Docker/DNS.)
+2. **Serverless GPU + object storage** (driven from the Mac) 🔨 — ✅ `S3Storage` (DO Spaces via boto3) + smoke-tested; ✅ RunPod worker image (`ghcr.io/bingliscodes/legatto-worker:v1`, public) deployed as a serverless endpoint, separates → stems in Spaces; 🔨 `RunPodSeparator` client + wiring (final key-passing fixes pending), then end-to-end from the app. **Interfaces are now key-based** — `Separator.separate(input_key, output_prefix)` and `Storage` keyed by string: `LocalSeparator`/`LocalStorage` resolve keys under `STORAGE_ROOT`; `RunPodSeparator`/`S3Storage` pass keys straight through. That's the seam that lets one code path target **local disk _or_ Spaces+RunPod** via config (`storage_backend` + `separator`, which move together). Handler is DB-free (compute only); the Celery task owns status.
 3. **Containerize + droplet**: Dockerfiles + nginx + `compose.prod`; bring the droplet up **by hand**; DNS + TLS.
 4. **CI/CD**: GitHub Actions build → registry → droplet pull & restart. Automate the proven manual deploy.
 
