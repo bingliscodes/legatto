@@ -62,10 +62,14 @@ class S3Storage(Storage):
         res = self.client.list_objects_v2(
             Bucket=self.bucket, Prefix=f"{track_id}/stems/"
         )
-        return sorted(res.get("Contents", []))
+        if not res["Contents"]:
+            return []
+
+        contents = res["Contents"]
+        return sorted([i["Key"] for i in contents])
 
     def open(self, key: str) -> bytes:
-        return super().open(key)
+        return self.client.get_object(Bucket=self.bucket, Key=key)["Body"].read()
 
 
 _storage: Storage | None = None
