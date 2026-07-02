@@ -19,16 +19,6 @@ router = APIRouter(prefix="/tracks")
 storage = get_storage()
 
 
-async def save_file_to_disk(file: UploadFile, job_dir) -> Path:
-    contents = await file.read()
-
-    destination_path = job_dir / file.filename
-
-    destination_path.write_bytes(contents)
-
-    return destination_path
-
-
 @router.get("/", response_model=list[TrackResponse])
 def get_tracks(db: Session = Depends(get_db)):
     """Returns all tracks, sorted by created_at (newest first)
@@ -69,7 +59,6 @@ def get_track(track_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404)
     stems = {}
     if track.status == TrackStatus.completed:
-        stems_dir = (STORAGE_ROOT / track_id / "stems").resolve()
         for file_name in storage.list_stems(track_id):
             stems[Path(file_name).stem] = f"/tracks/{track_id}/stems/{file_name}"
 
@@ -83,5 +72,5 @@ def get_stem(track_id: str, filename: str):
     try:
         file_bytes = storage.open(f"{track_id}/stems/{filename}")
         return Response(content=file_bytes, media_type="audio/wav")
-    except PermissionError as err:
-        print(f"Permission error: {err}")
+    except FileNotFoundError:
+        raise HTTPException(status_code=404)
