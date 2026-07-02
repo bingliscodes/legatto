@@ -80,10 +80,4 @@ def get_track(track_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{track_id}/stems/{filename}")
 def get_stem(track_id: str, filename: str):
-    # TODO: serve via storage.open(key) instead of FileResponse
-    stems_dir = (STORAGE_ROOT / track_id / "stems").resolve()
-    path = (stems_dir / filename).resolve()
-    if not path.is_relative_to(stems_dir) or not path.is_file():
-        raise HTTPException(status_code=404)
-
     return storage.open(f"{track_id}/stems/{filename}")
