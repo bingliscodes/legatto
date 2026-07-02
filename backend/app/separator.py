@@ -4,6 +4,7 @@ from demucs.pretrained import get_model
 from demucs.apply import apply_model
 from demucs.audio import AudioFile, save_audio
 import torch
+import runpod
 
 from app.config import settings, STORAGE_ROOT
 
@@ -24,7 +25,7 @@ class LocalSeparator(Separator):
 
     def separate(self, input_key: str, output_prefix: str) -> list[str]:
         output_dir = (STORAGE_ROOT / output_prefix).resolve()
-        input_path = (STORAGE_ROOT / input_path).resolve()
+        input_path = (STORAGE_ROOT / input_key).resolve()
         output_dir.mkdir(parents=True, exist_ok=True)
         wav = AudioFile(input_path).read(
             streams=0,
@@ -60,10 +61,15 @@ class LocalSeparator(Separator):
 
 class RunPodSeparator(Separator):
     def __init__(self):
-        pass
+        runpod.api.key = settings.runpod_api_key
+        self.endpoint = runpod.Endpoint(settings.runpod_endpoint_id)
 
     def separate(self, input_key: str, output_prefix: str) -> list[str]:
-        
+        payload = {"input_key": input_key, "output_prefix": output_prefix}
+        res = self.endpoint.run_sync(payload, timeout=300)
+        output = res["output"]
+        stems = output.get("stems", [])
+        return stems
 
 
 _separator: Separator | None = None
