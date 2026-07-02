@@ -47,7 +47,7 @@ async def process_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
     db.refresh(new_track)  # Get latest record from DB
 
     stem_separator.apply_async(
-        args=[track_id, input_path, stems_path], task_id=track_id
+        args=[track_id, str(input_path), str(stems_path)], task_id=track_id
     )
 
     return new_track
