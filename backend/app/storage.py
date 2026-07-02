@@ -23,17 +23,17 @@ class Storage(ABC):
 
 
 class LocalStorage(Storage):
-    def write_file(self, key, data):
+    def write_file(self, key: str, data: bytes) -> None:
         p = STORAGE_ROOT / key
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_bytes(data)
 
-    def list_stems(self, track_id):
+    def list_stems(self, track_id: str) -> list[str]:
         return sorted(
             [f.name for f in (STORAGE_ROOT / track_id / "stems").glob("*.wav")]
         )
 
-    def open(self, key):
+    def open(self, key: str) -> bytes:
         # directory-traversal guard
         safe_input = STORAGE_ROOT.resolve()
         target = (safe_input / key).resolve()
@@ -55,13 +55,16 @@ class S3Storage(Storage):
             aws_secret_access_key=settings.spaces_secret,
         )
 
-    def write_file(self, key, data):
-        return super().write_file(key, data)
+    def write_file(self, key: str, data: bytes) -> None:
+        self.client.put_object(Bucket=self.bucket, Key=key, Body=data)
 
-    def list_stems(self, track_id):
-        return super().list_stems(track_id)
+    def list_stems(self, track_id: str) -> list[str]:
+        res = self.client.list_objects_v2(
+            Bucket=self.bucket, Prefix=f"{track_id}/stems/"
+        )
+        return sorted(res.get("Contents", []))
 
-    def open(self, key):
+    def open(self, key: str) -> bytes:
         return super().open(key)
 
 
