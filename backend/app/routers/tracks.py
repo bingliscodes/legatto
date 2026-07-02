@@ -34,6 +34,7 @@ async def process_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
 
     data = await audio_file.read()
     input_key = f"{track_id}/{audio_file.filename}"
+    output_prefix = f"{track_id}/stems/"
     storage.write_file(input_key, data)
 
     input_path = STORAGE_ROOT / input_key
@@ -46,7 +47,7 @@ async def process_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
     db.refresh(new_track)  # Get latest record from DB
 
     stem_separator.apply_async(
-        args=[track_id, str(input_path), str(stems_path)], task_id=track_id
+        args=[track_id, input_key, output_prefix], task_id=track_id
     )
     return new_track
 
