@@ -24,6 +24,9 @@ class Settings(BaseSettings):
 
     runpod_api_key: str = ""
 
+    shifts: int = 1
+    overlap: float = 0.25
+
 
 settings = Settings()
 

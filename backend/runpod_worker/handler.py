@@ -13,6 +13,8 @@ s3 = boto3.client(
     aws_secret_access_key=os.environ["SPACES_SECRET"],
 )
 BUCKET = os.environ["SPACES_BUCKET"]
+SHIFTS = os.environ["SHIFTS"]
+OVERLAP = os.environ["OVERLAP"]
 
 _model = None
 
