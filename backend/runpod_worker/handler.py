@@ -69,5 +69,8 @@ def handler(event):
                 samplerate=model.samplerate,
             )
 
+        for file in local_stems.iterdir():
+            s3.upload_file(file, Bucket=BUCKET, Key=str(output_prefix / f"{file.name}"))
+
 
 runpod.serverless.start({"handler": handler})
