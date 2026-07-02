@@ -74,5 +74,7 @@ def handler(event):
         for file in local_stems.iterdir():
             s3.upload_file(str(file), Bucket=BUCKET, Key=f"{output_prefix}{file.name}")
 
+        return {"stems": [file.name for file in local_stems.iterdir()]}
+
 
 runpod.serverless.start({"handler": handler})
