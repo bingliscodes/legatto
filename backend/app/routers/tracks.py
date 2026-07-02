@@ -5,9 +5,9 @@ from sqlalchemy import select
 from uuid import uuid4
 from pathlib import Path
 import uuid
+from __future__ import annotations
 
 from app.storage import get_storage
-from app.queue import task_queue
 from app.tasks import stem_separator
 from app.config import STORAGE_ROOT
 from app.database import get_db
@@ -45,9 +45,13 @@ async def process_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
     db.add(new_track)
     db.commit()
     db.refresh(new_track)  # Get latest record from DB
-    task_queue.enqueue(
-        stem_separator, track_id, input_path, stems_path, job_id=track_id
+    # task_queue.enqueue(
+    #     stem_separator, track_id, input_path, stems_path, job_id=track_id
+    # )
+    stem_separator.apply_async(
+        args=[track_id, input_path, stems_path], task_id=track_id
     )
+
     return new_track
 
 
