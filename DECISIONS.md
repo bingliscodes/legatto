@@ -156,7 +156,7 @@ Going **straight to a full production deploy** (no thin spike). Four calls, made
 
 **Build order (tracer-bullet — each step leaves a working system):**
 
-1. **Local refactors** (on the Mac): extract the `Separator` seam, extract the `Storage` seam, swap RQ → Celery — verify the pipeline still works locally before anything leaves the laptop.
+1. **Local refactors** (on the Mac): `Separator` seam ✅, `Storage` seam 🔨 (built; pending traversal-guard + error-handling fixes), RQ → Celery ⬜ — verify the pipeline still works locally before anything leaves the laptop.
 2. **Serverless GPU + object storage** (still driven from the Mac): `Storage` → Spaces, `Separator` → remote GPU; validate upload → Celery → GPU → stems-in-Spaces → served, all before touching a server. (De-risks the hard part without also fighting Docker/DNS.)
 3. **Containerize + droplet**: Dockerfiles + nginx + `compose.prod`; bring the droplet up **by hand**; DNS + TLS.
 4. **CI/CD**: GitHub Actions build → registry → droplet pull & restart. Automate the proven manual deploy.
@@ -185,7 +185,7 @@ Daily-habit features layered on the spine. (This is the "Slice N" numbering that
 
 4. **Slow-down + A–B looping** ✅ (D8) — pitch-preserving time-stretch (SoundTouchJS, offline pre-stretch) + native `loopStart`/`loopEnd`, on a musical-seconds transport (pause/resume/seek/tempo-change-in-place).
 5. **Revisitable track library** ✅ (D9) — DB-backed persistence so tracks survive refresh and don't re-separate. Upload optimistically prepends to the list; the list polls `GET /tracks` (self-terminating when nothing's `queued`/`processing`) so status flips live; `GET /tracks/{id}` returns a stems map and clicking a `completed` track loads it into the player. `useSeparationJob` and the `/jobs` endpoint fully retired — the DB is the sole source of truth for track state. Runtime end-to-end, static analysis, and prod build are green.
-6. **Production deploy** 🔨 next (D11) — full production path, going straight to production (no thin spike): **serverless GPU** compute, **Celery** on Redis, **object storage** (S3 / DO Spaces), **self-served frontend** (nginx) on a **DigitalOcean droplet** (Docker Compose), **CI/CD** via GitHub Actions, custom domain + HTTPS. Build order + rationale in D11.
+6. **Production deploy** 🔨 in progress (D11) — full production path, going straight to production (no thin spike): **serverless GPU** compute, **Celery** on Redis, **object storage** (S3 / DO Spaces), **self-served frontend** (nginx) on a **DigitalOcean droplet** (Docker Compose), **CI/CD** via GitHub Actions, custom domain + HTTPS. Build order + rationale in D11.
 7. **Dedup via content hash** 📋 planned (D10) — split `Track` (user reference) / `Asset` (content-addressed artifact); skip re-separation on exact-file re-upload. With serverless GPU each separation is a metered per-call cost, so dedup saves real pennies + latency. Acoustic fingerprinting deferred.
 
 **Sequencing decided (2026-07-01):** library ✅ → **full production deploy** (D11) → dedup → ongoing. The earlier "deploy CPU first, measure per-song cost, then decide GPU" plan was **overridden**: minutes-long CPU turnaround is an unacceptable product UX, so the serverless-GPU decision is made, not measured (D11).
