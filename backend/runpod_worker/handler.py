@@ -65,7 +65,7 @@ def handler(event):
         ):  # model.sources == the 6 stem names
             save_audio(
                 source,
-                str(Path(local_stems) / f"{name}.wav"),
+                str(local_stems / f"{name}.wav"),
                 samplerate=model.samplerate,
             )
 
