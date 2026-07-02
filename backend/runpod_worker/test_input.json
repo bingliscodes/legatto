@@ -1,0 +1,6 @@
+{
+  "input": {
+    "input_key": "test123/song.mp3",
+    "output_prefix": "test123/stems/"
+  }
+}
