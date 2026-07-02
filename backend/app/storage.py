@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import boto3
+from botocore.exceptions import ClientError
 from pathlib import Path
 
 from app.config import STORAGE_ROOT
@@ -69,11 +70,15 @@ class S3Storage(Storage):
         if not contents:
             return []
 
-        contents = res["Contents"]
         return sorted([Path(i["Key"]).name for i in contents])
 
     def open(self, key: str) -> bytes:
-        return self.client.get_object(Bucket=self.bucket, Key=key)["Body"].read()
+        try:
+            self.client.get_object(Bucket=self.bucket, Key=key)["Body"].read()
+        except ClientError as e:
+            if e.response["Error"]["Code"] in ("NoSuchKey", "404"):
+                raise FileNotFoundError(key)
+            raise
 
 
 _storage: Storage | None = None
