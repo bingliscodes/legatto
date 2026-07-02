@@ -67,9 +67,6 @@ class S3Storage(Storage):
         )
         contents = res.get("Contents", [])
 
-        if not contents:
-            return []
-
         return sorted([Path(i["Key"]).name for i in contents])
 
     def open(self, key: str) -> bytes:
