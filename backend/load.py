@@ -1,3 +1,4 @@
+# Loads a sample record to S3 storage
 from app.storage import S3Storage
 
 s = S3Storage()
