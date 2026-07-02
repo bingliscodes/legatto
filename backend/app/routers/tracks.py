@@ -5,7 +5,6 @@ from sqlalchemy import select
 from uuid import uuid4
 from pathlib import Path
 import uuid
-from __future__ import annotations
 
 from app.storage import get_storage
 from app.tasks import stem_separator
@@ -49,7 +48,6 @@ async def process_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
     stem_separator.apply_async(
         args=[track_id, str(input_path), str(stems_path)], task_id=track_id
     )
-
     return new_track
 
 
