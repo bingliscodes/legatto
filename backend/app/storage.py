@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 from app.config import STORAGE_ROOT
+from app.config import settings
+import boto3
 
 
 class Storage(ABC):
@@ -43,6 +45,16 @@ class LocalStorage(Storage):
 
 
 class S3Storage(Storage):
+    def __init__(self):
+        self.bucket = settings.spaces_bucket
+        self.client = boto3.client(
+            "s3",
+            endpoint_url=settings.spaces_endpoint,
+            region_name=settings.spaces_region,
+            aws_access_key_id=settings.spaces_key,
+            aws_secret_access_key=settings.spaces_secret,
+        )
+
     def write_file(self, key, data):
         return super().write_file(key, data)
 
