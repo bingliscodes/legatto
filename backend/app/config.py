@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     spaces_key: str = ""
     spaces_secret: str = ""
 
+    runpod_api_key: str = ""
+
 
 settings = Settings()
 
