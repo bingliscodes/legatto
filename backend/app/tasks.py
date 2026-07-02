@@ -1,7 +1,5 @@
 # the stem separator — the "work"
 from pathlib import Path
-from celery import shared_task
-from celery.app.task import Task
 import uuid
 
 from app.database import SessionLocal
@@ -33,6 +31,3 @@ def stem_separator(track_id: str, input_path: str, output_directory: str):
             raise
     finally:
         db.close()
-
-
-stem_separator: Task = shared_task(stem_separator)
