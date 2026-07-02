@@ -87,5 +87,8 @@ _storage: Storage | None = None
 def get_storage() -> Storage:
     global _storage
     if _storage is None:
-        _storage = LocalStorage()
+        if settings.storage_backend == "s3":
+            _storage = S3Storage()
+        if settings.storage_backend == "local":
+            _storage = LocalStorage()
     return _storage
