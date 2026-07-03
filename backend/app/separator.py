@@ -16,16 +16,18 @@ class Separator(ABC):
 
 
 class LocalSeparator(Separator):
-    from demucs.pretrained import get_model
-    from demucs.apply import apply_model
-    from demucs.audio import AudioFile, save_audio
-    import torch
 
     def __init__(self, device: str):
+        from demucs.pretrained import get_model
+
         self.device = device
         self.model = get_model("htdemucs_6s").to(self.device).eval()
 
     def separate(self, input_key: str, output_prefix: str) -> list[str]:
+        from demucs.audio import AudioFile, save_audio
+        from demucs.apply import apply_model
+        import torch
+
         output_dir = (STORAGE_ROOT / output_prefix).resolve()
         input_path = (STORAGE_ROOT / input_key).resolve()
         output_dir.mkdir(parents=True, exist_ok=True)
