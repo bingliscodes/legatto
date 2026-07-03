@@ -2,8 +2,6 @@ fastapi
 uvicorn[standard]
 python-multipart
 python-dotenv
-demucs
-torchcodec
 sqlalchemy
 alembic
 psycopg2-binary

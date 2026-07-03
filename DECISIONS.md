@@ -168,7 +168,14 @@ Going **straight to a full production deploy** (no thin spike). Four calls, made
 
 **Why deferred, not now:** vertical-slice discipline — don't stack a new cross-origin CORS + presigned flow on top of a first deploy (Phase 3 already carries containerize + nginx + DNS + TLS as simultaneous failure modes; get the proxy path working in prod first, then optimize). **No lock-in:** the change is the same size later, and at handful-of-testers scale the proxy costs ≈$0 (a droplet's ~1 TB included transfer ≈ 4,000 song-loads/mo; overage ~$0.0025/load). The real driver isn't the dollar bill — it's droplet capacity + load time, which is why _compression_ is the higher-leverage half.
 
-**Open sub-decisions:** Postgres (self-hosted container vs. DO Managed); monthly cost ceiling. _(GPU provider resolved 2026-07-02: RunPod serverless.)_
+**Resolved sub-decisions:**
+
+- **GPU provider → RunPod serverless** (2026-07-02).
+- **Postgres → self-hosted container** with a named volume + a scheduled `pg_dump` to Spaces (2026-07-03). Chosen over DO Managed for the ops learning (volumes, backups, restore drills); blast radius is survivable — stems live in Spaces, so worst case is losing track _metadata_, which users can re-create. The `pg_dump`-to-Spaces cron is the mitigation that makes this acceptable against the data-loss bar.
+- **Domain → `legatto.live`** (2026-07-03, registered 3 yrs).
+- **Routing → single domain, path-based** (2026-07-03): nginx serves the built SPA at `/` with a `try_files $uri $uri/ /index.html` **SPA fallback** (so future React Router deep-links/refreshes don't 404), and reverse-proxies the API under **`/api/*`**. The `/api` namespace keeps the entire non-API path space free for client-side routes (no React-route-vs-API-route collision) and retires the hardcoded `API_BASE`. Frontend API calls move under `/api` at the nginx step.
+
+**Still open:** monthly cost ceiling.
 
 ---
 
