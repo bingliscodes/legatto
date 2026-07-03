@@ -1,9 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from demucs.pretrained import get_model
-from demucs.apply import apply_model
-from demucs.audio import AudioFile, save_audio
-import torch
+
 import runpod
 
 from app.config import settings, STORAGE_ROOT
@@ -19,6 +16,11 @@ class Separator(ABC):
 
 
 class LocalSeparator(Separator):
+    from demucs.pretrained import get_model
+    from demucs.apply import apply_model
+    from demucs.audio import AudioFile, save_audio
+    import torch
+
     def __init__(self, device: str):
         self.device = device
         self.model = get_model("htdemucs_6s").to(self.device).eval()
