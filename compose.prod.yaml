@@ -33,12 +33,12 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-    nginx:
-      build: ./frontend
-      ports:
-        - "80:8000"
-      depends_on:
-        -api
+  nginx:
+    build: ./frontend
+    ports:
+      - "80:8000"
+    depends_on:
+      -api
 
 volumes:
   pgdata:
