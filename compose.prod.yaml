@@ -6,8 +6,6 @@ services:
     environment:             # override env_file
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - REDIS_URL=redis://redis:6379/0
-    ports:
-      - "8000:8000"
     depends_on:
       - postgres
       - redis
@@ -34,6 +32,13 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+    nginx:
+      build: ./frontend
+      ports:
+        - "80:8000"
+      depends_on:
+        -api
 
 volumes:
   pgdata:
