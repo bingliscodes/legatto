@@ -1,7 +1,8 @@
 .env
-.venv
 .venv/
 storage/
 separated/
 data/
 __pycache__/
+*.pyc
+.DS_Store
