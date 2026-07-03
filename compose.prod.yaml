@@ -20,6 +20,7 @@ services:
     depends_on:
       - postgres
       - redis
+    pull_policy: never
 
   redis:
     image: redis:7

@@ -23,3 +23,8 @@ storage/
 *.mp3
 *.wav
 *.asd
+
+# SSH Keys
+ssh_key*
+*.pem
+id_ed25519*
