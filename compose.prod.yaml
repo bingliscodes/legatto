@@ -1,0 +1,39 @@
+services:
+  api:
+    build: ./backend         # builds backend/Dockerfile
+    image: legatto-api       # name it so 'worker' can reuse image
+    env_file: ./backend/.env # injects env variables at runtime
+    environment:             # override env_file
+      - database_url=
+      - redis_url=
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+
+  worker:
+    image: legatto-api
+    env_file: ./backend/.env
+    environment:
+      - database_url=
+      - redis_url=
+    command:
+    depends_on:
+      - postgres
+      - redis
+
+  redis:
+    iamge: redis:7
+
+  postgres:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=
+      - POSTGRES_PASSWORD=
+      - POSTGRES_DB=
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
