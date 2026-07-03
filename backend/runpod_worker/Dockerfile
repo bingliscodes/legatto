@@ -11,7 +11,6 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# ── DECISION: bake the demucs weights at build time? ──
 RUN python -c "from demucs.pretrained import get_model; get_model('htdemucs_6s')"
 
 COPY handler.py .
