@@ -36,9 +36,9 @@ services:
   nginx:
     build: ./frontend
     ports:
-      - "80:8000"
+      - "80:80"
     depends_on:
-      -api
+      - api
 
 volumes:
   pgdata:
