@@ -4,7 +4,7 @@ services:
     image: legatto-api       # name it so 'worker' can reuse image
     env_file: ./backend/.env # injects env variables at runtime
     environment:             # override env_file
-      - database_url=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD@postgres:5432/${POSTGRES_DB}
+      - database_url=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - redis_url=redis://redis:6379/0
     ports:
       - "8000:8000"
