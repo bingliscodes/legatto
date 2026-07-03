@@ -24,7 +24,7 @@ services:
       - redis
 
   redis:
-    iamge: redis:7
+    image: redis:7
 
   postgres:
     image: postgres:16
