@@ -16,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(tracks_router.router)
+app.include_router(tracks_router.router, prefix="/api")
 
 
 @app.get("/health")
