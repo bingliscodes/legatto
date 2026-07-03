@@ -4,8 +4,8 @@ services:
     image: legatto-api       # name it so 'worker' can reuse image
     env_file: ./backend/.env # injects env variables at runtime
     environment:             # override env_file
-      - database_url=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      - redis_url=redis://redis:6379/0
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - REDIS_URL=redis://redis:6379/0
     ports:
       - "8000:8000"
     depends_on:
@@ -16,8 +16,8 @@ services:
     image: legatto-api
     env_file: ./backend/.env
     environment:
-      - database_url=
-      - redis_url=
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - REDIS_URL=redis://redis:6379/0
     command: celery -A app.celery_app worker --loglevel=info
     depends_on:
       - postgres
