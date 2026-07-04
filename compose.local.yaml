@@ -15,8 +15,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - REDIS_URL=redis://redis:6379/0
-    command:
-      - celery -A app.celery_app worker --loglevel=info
+    command: celery -A app.celery_app worker --loglevel=info
     depends_on:
       - postgres
       - redis
