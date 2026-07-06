@@ -45,7 +45,7 @@ trap 'rm -f "$TMP"' EXIT
 #     pg_dump flags:  -U <user>  -Fc  <dbname>   # -Fc = compressed custom format
 #     redirect stdout of the whole exec to "$TMP"
 
-docker compose exec -T postgres sh -c 'pg_dump -U "$POSTGRES_USER" -Fc $"POSTGRES_DB"' > "$TMP"
+docker compose exec -T postgres sh -c 'pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB"' > "$TMP"
 # fail loudly if the dump came back empty
 [ -s "$TMP" ] || { echo "dump is empty — aborting" >&2; exit 1; }
 
@@ -66,9 +66,11 @@ echo "uploaded $DUMP_NAME"
 #              (last whitespace-separated column is the filename)
 #     delete:  aws s3 rm s3://$BACKUP_BUCKET/<key> --endpoint-url "$ENDPOINT"
 aws s3 ls "s3://$BACKUP_BUCKET/" --endpoint-url "$ENDPOINT" \
-  | awk '{print $NF}' \         # $NF = last column = the filename
-  | sort -r \                   # desc: newest at top, oldest at bottom
-  | tail -n +$((KEEP+1)) \      # print from line KEEP+1 onward
+   # $NF = last column = the filename
+  | awk '{print $NF}' \        
+   # desc: newest at top, oldest at bottom
+  | sort -r \                  
+  | tail -n +$((KEEP+1)) \
   | while read -r key; do
       aws s3 rm "s3://$BACKUP_BUCKET/$key" --endpoint-url "$ENDPOINT"
     done
