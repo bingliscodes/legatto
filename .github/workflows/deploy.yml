@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # amd64; matches the production droplet architecture
     permissions:
       contents: read
       packages: write
@@ -23,7 +23,7 @@ jobs:
       - name: Build & push API image
         uses: docker/build-push-action@v6
         with:
-          context: ./backend
+          context: ./backend # points build-push-action to the folder's Dockerfile
           push: true
           tags: ghcr.io/bingliscodes/legatto-api:latest
       - name: Build & push frontend image
