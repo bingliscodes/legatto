@@ -14,7 +14,8 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-      redis: service_started
+      redis: 
+        condition: service_started
 
   worker:
     image: legatto-api
@@ -26,7 +27,8 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-      redis: service_started
+      redis: 
+        condition: service_started
     pull_policy: never
 
   redis:
