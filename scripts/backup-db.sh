@@ -65,14 +65,12 @@ echo "uploaded $DUMP_NAME"
 #     list:    aws s3 ls s3://$BACKUP_BUCKET/ --endpoint-url "$ENDPOINT"
 #              (last whitespace-separated column is the filename)
 #     delete:  aws s3 rm s3://$BACKUP_BUCKET/<key> --endpoint-url "$ENDPOINT"
-aws s3 ls "s3://$BACKUP_BUCKET/" --endpoint-url "$ENDPOINT" \
-   # $NF = last column = the filename
-  | awk '{print $NF}' \        
-   # desc: newest at top, oldest at bottom
-  | sort -r \                  
-  | tail -n +$((KEEP+1)) \
-  | while read -r key; do
-      aws s3 rm "s3://$BACKUP_BUCKET/$key" --endpoint-url "$ENDPOINT"
-    done
+aws s3 ls "s3://$BACKUP_BUCKET/" --endpoint-url "$ENDPOINT" |
+  awk '{print $NF}' |
+  sort -r |        
+  tail -n +$((KEEP+1)) | 
+  while read -r key; do
+    aws s3 rm "s3://$BACKUP_BUCKET/$key" --endpoint-url "$ENDPOINT"
+  done
 
 echo "backup complete: $DUMP_NAME"
