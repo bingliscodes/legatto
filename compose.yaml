@@ -1,0 +1,43 @@
+name: legatto  # pin the project name → stable volume names (legatto_pgdata, etc.) regardless of how it's invoked
+
+# Base stack — environment-agnostic. Works anywhere.
+# Local:  docker compose up            (auto-merges compose.override.yaml)
+# Prod:   docker compose -f compose.yaml -f compose.prod.yaml up -d
+services:
+  api:
+    build: ./backend
+    image: legatto-api
+    env_file: ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+
+  worker:
+    image: legatto-api
+    env_file: ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - REDIS_URL=redis://redis:6379/0
+    command: celery -A app.celery_app worker --loglevel=info
+    depends_on:
+      - postgres
+      - redis
+    pull_policy: never
+
+  redis:
+    image: redis:7
+
+  postgres:
+    image: postgres:17
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
