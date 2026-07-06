@@ -53,6 +53,7 @@ services:
     env_file: ./backend/.env
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    command: alembic upgrade head
     depends_on:
       postgres:
         condition: service_healthy
