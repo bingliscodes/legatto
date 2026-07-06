@@ -32,3 +32,19 @@ jobs:
           context: ./frontend
           push: true
           tags: ghcr.io/bingliscodes/legatto-frontend:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to droplet
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{secrets.DROPLET_HOST}}
+          username: ${{secrets.DROPLET_USER}}
+          key: ${{secrets.DROPLET_SSH_KEY}}
+          script: |
+            cd ~/legatto
+            git pull
+            docker compose -f compose.yaml -f compose.prod.yaml pull
+            docker compose -f compose.yaml -f compose.prod.yaml up -d
