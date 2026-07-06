@@ -3,7 +3,7 @@
 # Adds TLS nginx + certbot on top of the base stack.
 services:
   nginx:
-    build: ./frontend
+    image: ghcr.io/bingliscodes/legatto-frontend
     ports:
       - "80:80"
       - "443:443"

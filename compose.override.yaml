@@ -3,6 +3,7 @@
 services:
   nginx:
     build: ./frontend
+    image: ghcr.io/bingliscodes/legatto-frontend
     ports:
       - "80:80"
     volumes:
