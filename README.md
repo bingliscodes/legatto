@@ -35,6 +35,12 @@ triggers GitHub Actions to build the images, push them to GHCR, and deploy to th
 schema migrations apply automatically on deploy. Full detail in
 [DECISIONS.md](DECISIONS.md) (D11).
 
+**Backups:** a nightly cron on the droplet runs `scripts/backup-db.sh` — `pg_dump` of
+Postgres → a private DO Spaces bucket, keeping the last 7. Recovery is
+`scripts/restore-db.sh`, a safe swap-by-rename into the live DB (restore off to the side,
+typed confirmation, then an atomic rename cutover that preserves the old DB as a rollback
+point). See [DECISIONS.md](DECISIONS.md) (D11 step 5).
+
 ## Local development
 
 **Prerequisites:** Python 3.12+, Node 20+, Docker (Desktop running).
