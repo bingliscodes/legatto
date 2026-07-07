@@ -39,6 +39,8 @@ class LocalStorage(Storage):
 
     def list_stems(self, track_id: str) -> list[str]:
         stems_dir = STORAGE_ROOT / track_id / "stems"
+        if not stems_dir.is_dir():
+            return []
         return sorted(
             [
                 f.name
