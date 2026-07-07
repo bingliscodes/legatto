@@ -6,6 +6,8 @@ from pathlib import Path
 from app.config import STORAGE_ROOT
 from app.config import settings
 
+AUDIO_EXTENSIONS = {".wav", ".mp3"}
+
 
 class Storage(ABC):
     @abstractmethod
@@ -36,8 +38,13 @@ class LocalStorage(Storage):
         p.write_bytes(data)
 
     def list_stems(self, track_id: str) -> list[str]:
+        stems_dir = STORAGE_ROOT / track_id / "stems"
         return sorted(
-            [f.name for f in (STORAGE_ROOT / track_id / "stems").glob("*.wav")]
+            [
+                f.name
+                for f in stems_dir.iterdir()
+                if f.suffix.lower() in AUDIO_EXTENSIONS
+            ]
         )
 
     def open(self, key: str) -> bytes:
