@@ -58,7 +58,11 @@ def get_track(track_id: str, db: Session = Depends(get_db)):
     stems = {}
     if track.status == TrackStatus.completed:
         for file_name in storage.list_stems(track_id):
-            stems[Path(file_name).stem] = f"/tracks/{track_id}/stems/{file_name}"
+            url = storage.url_for(f"{track_id}/stems/{file_name}")
+
+            stems[Path(file_name).stem] = (
+                url if url else f"/tracks/{track_id}/stems/{file_name}"
+            )
 
     return TrackDetailResponse(
         **TrackResponse.model_validate(track).model_dump(), stems=stems

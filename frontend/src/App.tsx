@@ -41,7 +41,10 @@ function App() {
 
   function loadFromStems(stems: Record<string, string>) {
     const absolute_paths = Object.fromEntries(
-      Object.entries(stems).map(([name, url]) => [name, `${API_BASE}${url}`]),
+      Object.entries(stems).map(([name, url]) => [
+        name,
+        url.startsWith("http") ? url : `${API_BASE}${url}`,
+      ]),
     );
     load(absolute_paths);
   }
