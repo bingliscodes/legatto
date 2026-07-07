@@ -28,6 +28,7 @@ class TrackTask(celery_app.Task):
 
 
 @celery_app.task(
+    base=TrackTask,
     autoretry_for=(
         HTTPError,
     ),  # retry when RunPod throws a transient HTTP error (the 520)
