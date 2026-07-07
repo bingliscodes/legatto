@@ -2,3 +2,4 @@ demucs
 boto3
 runpod
 torchcodec
+lameenc

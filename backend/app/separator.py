@@ -57,8 +57,9 @@ class LocalSeparator(Separator):
         ):  # model.sources == the 6 stem names
             save_audio(
                 source,
-                str(Path(output_dir) / f"{name}.wav"),
+                str(Path(output_dir) / f"{name}.mp3"),
                 samplerate=self.model.samplerate,
+                bitrate=160,
             )
         return list(self.model.sources)
 
