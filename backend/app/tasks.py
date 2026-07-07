@@ -1,5 +1,6 @@
 # the stem separator — the "work"
 import uuid
+from requests.exceptions import HTTPError
 
 from app.database import SessionLocal
 from app.separator import get_separator
@@ -7,7 +8,15 @@ from app.models.track import Track, TrackStatus
 from app.celery_app import celery_app
 
 
-@celery_app.task
+@celery_app.task(
+    autoretry_for=(
+        HTTPError,
+    ),  # retry when RunPod throws a transient HTTP error (the 520)
+    retry_backoff=True,  # exponential: ~1s, 2s, 4s… (gives the cold start time to warm)
+    retry_backoff_max=60,  # cap the delay
+    retry_jitter=True,  # spread retries so they don't sync up
+    max_retries=3,
+)
 def stem_separator(track_id: str, input_key: str, output_prefix: str):
     """Creates a new file for each instrument"""
     db = SessionLocal()
