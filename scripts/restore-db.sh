@@ -32,7 +32,7 @@ key="${1:-$(aws s3 ls s3://"$BACKUP_BUCKET"/ --endpoint-url "$ENDPOINT" |
   awk '{print $NF}' | 
   sort | 
   tail -n1)}"
-  aws s3 cp "s3://"$BACKUP_BUCKET"/$key" /tmp/restore.dump --endpoint-url "$ENDPOINT"
+  aws s3 cp "s3://$BACKUP_BUCKET/$key" /tmp/restore.dump --endpoint-url "$ENDPOINT"
 
 
 # --- 2. safety-dump the CURRENT live DB (your backup dump line, verbatim) -----
