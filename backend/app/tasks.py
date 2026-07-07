@@ -39,22 +39,17 @@ class TrackTask(celery_app.Task):
 def stem_separator(track_id: str, input_key: str, output_prefix: str):
     """Creates a new file for each instrument"""
     db = SessionLocal()
+
     try:
         track = db.get(Track, uuid.UUID(track_id))
         if track is None:
             raise LookupError(f"Track {track_id} not found")
-        try:
-            track.status = TrackStatus.processing
-            db.commit()
+        track.status = TrackStatus.processing
+        db.commit()
 
-            # Processing work
-            get_separator().separate(input_key, output_prefix)
-
-            track.status = TrackStatus.completed
-            db.commit()
-        except Exception:
-            track.status = TrackStatus.failed
-            db.commit()
-            raise
+        # Processing work
+        get_separator().separate(input_key, output_prefix)
+        track.status = TrackStatus.completed
+        db.commit()
     finally:
         db.close()
