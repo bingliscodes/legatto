@@ -85,15 +85,11 @@ class S3Storage(Storage):
             raise
 
     def url_for(self, key: str) -> str | None:
-        try:
-            presigned_url = self.client.generate_presigned_url(
-                "get_object", params={"Bucket": self.bucket, "Key": key}, ExpiresIn=3600
-            )
-            return presigned_url
-        except ClientError as e:
-            if e.response["Error"]["Code"] in ("NoSuchKey", "404"):
-                raise FileNotFoundError(key)
-            raise
+        return self.client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": self.bucket, "Key": key},
+            ExpiresIn=3600,
+        )
 
 
 _storage: Storage | None = None
