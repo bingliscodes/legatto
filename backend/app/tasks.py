@@ -11,18 +11,11 @@ from app.celery_app import celery_app
 class TrackTask(celery_app.Task):
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         db = SessionLocal()
-        track_id = args[0]
         try:
-            track = db.get(Track, uuid.UUID(track_id))
-            if track is None:
-                raise LookupError(f"Track {track_id} not found")
-            try:
+            track = db.get(Track, uuid.UUID(args[0]))
+            if track is not None:
                 track.status = TrackStatus.failed
                 db.commit()
-            except Exception:
-                track.status = TrackStatus.failed
-                db.commit()
-                raise
         finally:
             db.close()
 
