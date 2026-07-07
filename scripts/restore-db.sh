@@ -76,7 +76,7 @@ docker compose exec -T postgres sh -c 'pg_restore -U "$POSTGRES_USER" -d legatto
 #     ...-d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='legatto';")
 exists=$(echo "SELECT 1 FROM pg_database WHERE datname='legatto_old'" \
   | docker compose exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d postgres -tA')
-[ "$exists" = 1] || { echo "a prior rollback point legatto_old exists — drop or rename it first."; exit 1; }
+[ "$exists" != 1 ] || { echo "a prior rollback point legatto_old exists — drop or rename it first."; exit 1; }
 
 docker compose stop api worker
 docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d postgres -c "ALTER DATABASE legatto RENAME TO legatto_old;"'
