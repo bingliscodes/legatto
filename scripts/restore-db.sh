@@ -81,8 +81,8 @@ exists=$(echo "SELECT 1 FROM pg_database WHERE datname='legatto_old'" \
 docker compose stop api worker
 docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d postgres -c "ALTER DATABASE legatto RENAME TO legatto_old;"'
 docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d postgres -c "ALTER DATABASE legatto_new RENAME TO legatto;"' 
+docker compose exec postgres sh -c 'dropdb -U "$POSTGRES_USER" legatto_old'
 docker compose start api worker
 docker compose restart nginx
 
 echo "restore complete — rollback point kept as legatto_old"
-echo "verify the site, then reclaim space:  docker compose exec postgres sh -c 'dropdb -U \"\$POSTGRES_USER\" legatto_old'"
