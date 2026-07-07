@@ -28,11 +28,11 @@ ENDPOINT="$SPACES_ENDPOINT"
 #     newest:  aws s3 ls s3://$BACKUP_BUCKET/ --endpoint-url "$ENDPOINT" | awk '{print $NF}' | sort | tail -n1
 #     fetch:   aws s3 cp s3://$BACKUP_BUCKET/<key> /tmp/restore.dump --endpoint-url "$ENDPOINT"
 # <fill: resolve the key (from $1 or newest), then cp it to /tmp/restore.dump>
-key=$(aws s3 ls s3://$BACKUP_BUCKET/ --endpoint-url "$ENDPOINT" | 
+key=$(aws s3 ls s3://"$BACKUP_BUCKET"/ --endpoint-url "$ENDPOINT" | 
   awk '{print $NF}' | 
   sort | 
   tail -n1)
-  aws s3 cp "s3://$BACKUP_BUCKET/$key" /tmp/restore.dump --endpoint-url "$ENDPOINT"
+  aws s3 cp "s3://"$BACKUP_BUCKET"/$key" /tmp/restore.dump --endpoint-url "$ENDPOINT"
 
 
 # --- 2. safety-dump the CURRENT live DB (your backup dump line, verbatim) -----
