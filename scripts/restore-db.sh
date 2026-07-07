@@ -74,8 +74,8 @@ docker compose exec -T postgres sh -c 'pg_restore -U "$POSTGRES_USER" -d legatto
 #     docker compose start api worker
 #   (if a rename still says "being accessed by other users", a connection lingers:
 #     ...-d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='legatto';")
-exists=$(docker compose exec postgres -c 'psql -U "$POSTGRES_USER" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='legatto_old'"')
-[ "$exists" = 1] || { echo "a prior rollback point legatto_old exists — drop or rename it first."; exit 1; }
+exists=$(echo "SELECT 1 FROM pg_database WHERE datname='legatto_old'" \
+  | docker compose exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d postgres -tA')
 
 docker compose stop api worker
 docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d postgres -c "ALTER DATABASE legatto RENAME TO legatto_old;"'
