@@ -28,11 +28,11 @@ ENDPOINT="$SPACES_ENDPOINT"
 #     newest:  aws s3 ls s3://$BACKUP_BUCKET/ --endpoint-url "$ENDPOINT" | awk '{print $NF}' | sort | tail -n1
 #     fetch:   aws s3 cp s3://$BACKUP_BUCKET/<key> /tmp/restore.dump --endpoint-url "$ENDPOINT"
 # <fill: resolve the key (from $1 or newest), then cp it to /tmp/restore.dump>
-aws s3 ls s3://$BACKUP_BUCKET/ --endpoint-url "$ENDPOINT" | 
+key=$(aws s3 ls s3://$BACKUP_BUCKET/ --endpoint-url "$ENDPOINT" | 
   awk '{print $NF}' | 
   sort | 
-  tail -n1 key |
-  aws s3 cp "s3://$BACKUP_BUCKET/$key" --endpoint-url "$ENDPOINT" > /tmp/restore.dump
+  tail -n1)
+  aws s3 cp "s3://$BACKUP_BUCKET/$key" /tmp/restore.dump --endpoint-url "$ENDPOINT"
 
 
 # --- 2. safety-dump the CURRENT live DB (your backup dump line, verbatim) -----
@@ -55,7 +55,7 @@ docker compose exec -T postgres sh -c 'pg_restore -U "$POSTGRES_USER" -d legatto
 #   facts:  read -r -p "About to replace the LIVE database. Type yes: " ans
 #           [ "$ans" = yes ] || { echo aborted; exit 1; }
 read -r -p "About to replace the LIVE database. type yes: " ans 
-  ["$ans" =yes] || {echo aborted; exit 1;}
+  [ "$ans" = yes ] || { echo aborted; exit 1; }
 
 # --- 5. swap (the only downtime — keep it short) -----------------------------
 # TODO(you): stop the app (releases its connections), rename, restart.
@@ -71,6 +71,7 @@ read -r -p "About to replace the LIVE database. type yes: " ans
 docker compose stop api worker
 docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d postgres -c "ALTER DATABASE legatto RENAME TO legatto_old;"'
 docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d postgres -c "ALTER DATABASE legatto_new RENAME TO legatto;"' 
+docker compose start api worker
 
 echo "restore complete — rollback point kept as legatto_old"
 echo "verify the site, then reclaim space:  docker compose exec postgres sh -c 'dropdb -U \"\$POSTGRES_USER\" legatto_old'"
