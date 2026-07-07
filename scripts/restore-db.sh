@@ -85,4 +85,4 @@ docker compose exec postgres sh -c 'dropdb -U "$POSTGRES_USER" legatto_old'
 docker compose start api worker
 docker compose restart nginx
 
-echo "restore complete — rollback point kept as legatto_old"
+echo "restore complete"
