@@ -8,6 +8,25 @@ from app.models.track import Track, TrackStatus
 from app.celery_app import celery_app
 
 
+class TrackTask(celery_app.Task):
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        db = SessionLocal()
+        track_id = args[0]
+        try:
+            track = db.get(Track, uuid.UUID(track_id))
+            if track is None:
+                raise LookupError(f"Track {track_id} not found")
+            try:
+                track.status = TrackStatus.failed
+                db.commit()
+            except Exception:
+                track.status = TrackStatus.failed
+                db.commit()
+                raise
+        finally:
+            db.close()
+
+
 @celery_app.task(
     autoretry_for=(
         HTTPError,
