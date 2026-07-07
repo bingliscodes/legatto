@@ -42,20 +42,26 @@ docker compose exec -T postgres sh -c 'pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRE
 [ -s "$SAFETY" ] || { echo "safety dump empty — aborting" >&2; exit 1; }
 echo "safety dump: $SAFETY"
 
-# --- 3. restore into a FRESH legatto_new (live DB still serving) --------------
-# TODO(you): create legatto_new and pg_restore the fetched dump into it.
-#   (if a prior aborted run left legatto_new, drop it first or createdb fails)
-#   facts:  docker compose exec postgres sh -c 'createdb -U "$POSTGRES_USER" legatto_new'
-#           pg_restore into legatto_new — the mirror of the drill, /tmp/restore.dump via stdin
-docker compose exec postgres sh -c 'createdb -U "$POSTGRES_USER" legatto_new'
-docker compose exec -T postgres sh -c 'pg_restore -U "$POSTGRES_USER" -d legatto_new' < /tmp/restore.dump
 
-# --- 4. CONFIRM (the guardrail) ----------------------------------------------
+
+# --- 3. CONFIRM (the guardrail) ----------------------------------------------
 # TODO(you): refuse to continue unless the user types exactly 'yes'.
 #   facts:  read -r -p "About to replace the LIVE database. Type yes: " ans
 #           [ "$ans" = yes ] || { echo aborted; exit 1; }
 read -r -p "About to replace the LIVE database. type yes: " ans 
   [ "$ans" = yes ] || { echo aborted; exit 1; }
+
+
+  # --- 4. restore into a FRESH legatto_new (live DB still serving) --------------
+# TODO(you): create legatto_new and pg_restore the fetched dump into it.
+#   (if a prior aborted run left legatto_new, drop it first or createdb fails)
+#   facts:  docker compose exec postgres sh -c 'createdb -U "$POSTGRES_USER" legatto_new'
+#           pg_restore into legatto_new — the mirror of the drill, /tmp/restore.dump via stdin
+
+
+
+docker compose exec postgres sh -c 'createdb -U "$POSTGRES_USER" legatto_new'
+docker compose exec -T postgres sh -c 'pg_restore -U "$POSTGRES_USER" -d legatto_new' < /tmp/restore.dump
 
 # --- 5. swap (the only downtime — keep it short) -----------------------------
 # TODO(you): stop the app (releases its connections), rename, restart.
