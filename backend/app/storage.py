@@ -24,6 +24,10 @@ class Storage(ABC):
     def open(self, key: str) -> bytes:
         raise NotImplementedError
 
+    @abstractmethod
+    def url_for(self, key: str) -> str | None:
+        raise NotImplementedError
+
 
 class LocalStorage(Storage):
     def write_file(self, key: str, data: bytes) -> None:
@@ -45,6 +49,9 @@ class LocalStorage(Storage):
             raise FileNotFoundError(key)
 
         return target.read_bytes()
+
+    def url_for(self, key: str) -> str | None:
+        return None
 
 
 class S3Storage(Storage):
@@ -72,6 +79,17 @@ class S3Storage(Storage):
     def open(self, key: str) -> bytes:
         try:
             return self.client.get_object(Bucket=self.bucket, Key=key)["Body"].read()
+        except ClientError as e:
+            if e.response["Error"]["Code"] in ("NoSuchKey", "404"):
+                raise FileNotFoundError(key)
+            raise
+
+    def url_for(self, key: str) -> str | None:
+        try:
+            presigned_url = self.client.generate_presigned_url(
+                "get_object", params={"Bucket": self.bucket, "Key": key}, ExpiresIn=3600
+            )
+            return presigned_url
         except ClientError as e:
             if e.response["Error"]["Code"] in ("NoSuchKey", "404"):
                 raise FileNotFoundError(key)
