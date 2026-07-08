@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     shifts: int = 1
     overlap: float = 0.25
 
+    session_secret: str = ""
+    session_https_only: bool = False
+
 
 settings = Settings()
 
