@@ -5,7 +5,7 @@ from app.database import get_db
 from app.models.user import User
 
 
-def get_current_user(request: Request, db: Session = Depends(get_db)) -> uuid.UUID:
+def get_current_user_id(request: Request, db: Session = Depends(get_db)) -> uuid.UUID:
     session_id = request.session.get("user_id")
 
     if session_id:

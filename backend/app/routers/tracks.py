@@ -12,7 +12,7 @@ from app.config import STORAGE_ROOT
 from app.database import get_db
 from app.models.track import Track
 from app.schemas.track import TrackResponse, TrackDetailResponse, TrackStatus
-from app.dependencies.auth import get_current_user
+from app.dependencies.auth import get_current_user_id
 
 router = APIRouter(prefix="/tracks")
 
@@ -21,7 +21,7 @@ storage = get_storage()
 
 @router.get("/", response_model=list[TrackResponse])
 def get_tracks(
-    user_id: uuid.UUID = Depends(get_current_user), db: Session = Depends(get_db)
+    user_id: uuid.UUID = Depends(get_current_user_id), db: Session = Depends(get_db)
 ):
     """Returns all tracks for the current user, sorted by created_at (newest first)
     TODO: Add pagination/.limit()
@@ -35,7 +35,7 @@ def get_tracks(
 @router.post("/", response_model=TrackResponse)
 async def process_audio(
     audio_file: UploadFile,
-    user_id: uuid.UUID = Depends(get_current_user),
+    user_id: uuid.UUID = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
     """Takes in an audio file, creates track id, initialize directory, save to disk, drop the job in the queue, return job id"""
@@ -61,7 +61,7 @@ async def process_audio(
 @router.get("/{track_id}", response_model=TrackDetailResponse)
 def get_track(
     track_id: str,
-    user_id: uuid.UUID = Depends(get_current_user),
+    user_id: uuid.UUID = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
     track = db.get(Track, uuid.UUID(track_id))
@@ -83,6 +83,10 @@ def get_track(
 
 @router.get("/{track_id}/stems/{filename}")
 def get_stem(track_id: str, filename: str):
+    """
+    Since prod uses presigned URLs and get_stem isn't involved there's
+    no real risk and leaving this route unfiltered for users.
+    """
     try:
         file_bytes = storage.open(f"{track_id}/stems/{filename}")
         return Response(content=file_bytes, media_type="audio/wav")
