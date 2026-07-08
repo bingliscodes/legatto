@@ -182,7 +182,23 @@ Going **straight to a full production deploy** (no thin spike). Four calls, made
 
 **Still open:** monthly cost ceiling.
 
----
+### D12 — Multi-User and Dedup
+
+**Date:** 2026-07-08
+
+Decided to use anonymous, persistent sessions for users to maintain their own track library. Deferred OAuth to later upgrade and dedup for later since they can be added without significant cost.
+
+1. Schema changes
+   - Add a User model and users table
+   - Create relationship between Track and User (the user_id is the "owner" of the track)
+   - Run Alembic migration
+2. Anonymous Persistent Sessions (FastAPI dependency injection)
+   - Read cookie from request and verify signature. If valid, pull out the user id, load and return the user.
+   - If cookie is missing or tampered/invalid, create a new users row, sign a token carrying its id, and set the cookie, then return the new user.
+3. Wire changes into endpoints
+   - POST /tracks sets the user_id on a track
+   - GET /tracks filters tracks to the current user
+   - GET /{track_id} confirms that the user is the owner of the track (404 otherwise)
 
 ## Build approach
 
