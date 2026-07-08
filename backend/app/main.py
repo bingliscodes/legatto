@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from .routers import tracks as tracks_router
-from config import settings
+from .config import settings
 
 app = FastAPI(title="Guitarist Practice Tool API")
 
