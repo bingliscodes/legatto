@@ -6,7 +6,6 @@ from app.models.user import User
 
 
 def get_current_user(request: Request, db: Session = Depends(get_db)) -> uuid.UUID:
-    # 1. Read the cookie
     session_id = request.session.get("user_id")
 
     if session_id:
@@ -14,7 +13,7 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> uuid.UU
 
     new_user = User()
     db.add(new_user)
-    db.commit(new_user)
-    db.refresh()
+    db.commit()
+    db.refresh(new_user)
     request.session["user_id"] = str(new_user.id)
     return new_user.id
