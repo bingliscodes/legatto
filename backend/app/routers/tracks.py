@@ -12,6 +12,7 @@ from app.config import STORAGE_ROOT
 from app.database import get_db
 from app.models.track import Track
 from app.schemas.track import TrackResponse, TrackDetailResponse, TrackStatus
+from app.dependencies.auth import get_current_user
 
 router = APIRouter(prefix="/tracks")
 
@@ -19,16 +20,24 @@ storage = get_storage()
 
 
 @router.get("/", response_model=list[TrackResponse])
-def get_tracks(db: Session = Depends(get_db)):
-    """Returns all tracks, sorted by created_at (newest first)
+def get_tracks(
+    user_id: uuid.UUID = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    """Returns all tracks for the current user, sorted by created_at (newest first)
     TODO: Add pagination/.limit()
     """
-    stmt = select(Track).order_by(Track.created_at.desc())
+    stmt = (
+        select(Track).where(Track.user_id == user_id).order_by(Track.created_at.desc())
+    )
     return db.execute(stmt).scalars().all()
 
 
 @router.post("/", response_model=TrackResponse)
-async def process_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
+async def process_audio(
+    audio_file: UploadFile,
+    user_id: uuid.UUID = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     """Takes in an audio file, creates track id, initialize directory, save to disk, drop the job in the queue, return job id"""
     track_id = str(uuid4())
 
@@ -38,7 +47,7 @@ async def process_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
     storage.write_file(input_key, data)
 
     # Create new track in DB before enqueuing task
-    new_track = Track(id=track_id, display_name=audio_file.filename)
+    new_track = Track(id=track_id, user_id=user_id, display_name=audio_file.filename)
     db.add(new_track)
     db.commit()
     db.refresh(new_track)  # Get latest record from DB
@@ -50,10 +59,14 @@ async def process_audio(audio_file: UploadFile, db: Session = Depends(get_db)):
 
 
 @router.get("/{track_id}", response_model=TrackDetailResponse)
-def get_track(track_id: str, db: Session = Depends(get_db)):
+def get_track(
+    track_id: str,
+    user_id: uuid.UUID = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     track = db.get(Track, uuid.UUID(track_id))
 
-    if not track:
+    if not track or track.user_id != user_id:
         raise HTTPException(status_code=404)
     stems = {}
     if track.status == TrackStatus.completed:
