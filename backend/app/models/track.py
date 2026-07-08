@@ -1,4 +1,4 @@
-from sqlalchemy import DateTime, func
+from sqlalchemy import DateTime, func, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 import uuid
 import enum
@@ -25,4 +25,4 @@ class Track(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
-    user_id: Mapped[uuid.UUID | None]
+    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
