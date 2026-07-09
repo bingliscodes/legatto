@@ -12,7 +12,7 @@
 set -euo pipefail
 
 # --- config (same pattern as backup-db.sh) -----------------------------------
-PROJECT_DIR="${PROJECT_DIR:-/root/legatto}"
+PROJECT_DIR="${PROJECT_DIR:-$(cd "$(dirname "$0")/.." && pwd)}" 
 BACKUP_BUCKET="legatto-backups"
 cd "$PROJECT_DIR"
 

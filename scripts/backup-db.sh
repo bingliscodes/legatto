@@ -13,7 +13,7 @@
 set -euo pipefail
 
 # --- config ------------------------------------------------------------------
-PROJECT_DIR="${PROJECT_DIR:-/root/legatto}"   # where the compose files live
+PROJECT_DIR="${PROJECT_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"   # where the compose files live
 BACKUP_BUCKET="legatto-backups"               # PRIVATE bucket — create it first
 KEEP=7                                          # how many backups to retain
 TIMESTAMP="$(date -u +%Y%m%d-%H%M%S)"
