@@ -194,7 +194,7 @@ export function useAudioPlayer() {
         ? 0
         : soloed && soloed !== name
           ? 0
-          : ui.volume / 100;
+          : (ui.volume / 100) ** 2;
     }
   }, [stemState, soloed]);
 
