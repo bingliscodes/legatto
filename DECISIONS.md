@@ -191,14 +191,14 @@ Partially resolves D3 ("no accounts, but stay additive-ready"). The library was 
 **Why anonymous-first (the alternatives, and why they lost):**
 
 - It solves the _actual_ problem — per-user isolation — with near-zero code and **zero login friction**, which is right for a daily-use tool.
-- It's a **two-way door**: a `users` row is just an identity with no credentials, so adding OAuth later *claims* that same row (attach a Google id — the nullable, unique `google_identity` column is the pre-wired hook), no lock-in, no data migration. That reversibility is what _licenses_ deferring real accounts.
+- It's a **two-way door**: a `users` row is just an identity with no credentials, so adding OAuth later _claims_ that same row (attach a Google id — the nullable, unique `google_identity` column is the pre-wired hook), no lock-in, no data migration. That reversibility is what _licenses_ deferring real accounts.
 - **Rejected full password auth** (JWT + bcrypt + reset flows): the most code and the most security surface for the least benefit now — and hand-rolling password storage is the #1 solo-project security liability. **Rejected ephemeral session-only**: doesn't persist and isn't upgradeable.
 
 **Why dedup stays deferred (D10 Track/Asset split):** the future migration — hash existing files → build an `Asset` table → point tracks at assets by FK — is a **two-way door** (a contained, additive backfill), so deferring is _correct_, not a trap. The trigger to build it is observable: multiple users uploading the **same** files (overlap on popular tracks), ~zero at launch. When it's time, **file-hash** beats audio-fingerprinting (far lower cost/complexity; fuzzy matching isn't worth it yet).
 
 **Data model:** `users` (UUID PK, `created_at`, nullable+unique `google_identity`) + a real FK `tracks.user_id → users.id`. Cardinality is **many tracks → one user**, so the FK sits on the _many_ side (tracks) — **no bridge table** (bridges are for many-to-many; User→Track is one-to-many, and the later Track→Asset is many-to-one — both plain FKs). Existing owner-less tracks keep `NULL` and become **invisible** (the filter never matches them) — accepted (a handful of test uploads); schema-only migration, no data purge (which also couldn't reach the stems in Spaces).
 
-**Security bar:** the identity cookie is **signed** (Starlette `SessionMiddleware`, which uses `itsdangerous`) — tamper with it and the whole session is discarded, so a `user_id` in a valid session is _always_ server-issued: **forgery is impossible**, and the dependency therefore *trusts* the id with no per-request DB re-check. `SESSION_SECRET` is durable, secret infra (rotating it silently logs every anonymous user out) and is **required config with no default**, so a missing secret fails loud instead of running a silent auth bypass. `session_https_only` is on in prod (off locally for HTTP).
+**Security bar:** the identity cookie is **signed** (Starlette `SessionMiddleware`, which uses `itsdangerous`) — tamper with it and the whole session is discarded, so a `user_id` in a valid session is _always_ server-issued: **forgery is impossible**, and the dependency therefore _trusts_ the id with no per-request DB re-check. `SESSION_SECRET` is durable, secret infra (rotating it silently logs every anonymous user out) and is **required config with no default**, so a missing secret fails loud instead of running a silent auth bypass. `session_https_only` is on in prod (off locally for HTTP).
 
 **Access control:** a `get_current_user_id` dependency (returns the _id_ only — lazy; widen to a full `User` later if needed) reads/verifies the cookie and mints+sets it on first visit. `GET /tracks` filters by owner; `GET /{id}` returns **404** (not 403 — don't leak existence) if the track isn't yours. `get_stem` is left **capability-based / ungated on purpose**: prod serves stems via presigned Spaces URLs (get_stem is only the local-dev fallback) and `track_id`s are unguessable UUIDs — consistent with the presigned capability model.
 
@@ -212,6 +212,12 @@ Partially resolves D3 ("no accounts, but stay additive-ready"). The library was 
 
 - **FK-by-string resolves against `Base.metadata`** — `ForeignKey("users.id")` needs the `User` model _imported_ before the mappers configure, or `NoReferencedTableError` (an in-memory mapper-config error — the DB isn't even involved). Fixed once by importing every model in `app/models/__init__.py` (the runtime twin of the Alembic `env.py` import).
 - **Autogenerate emits `None` constraint names** → a broken downgrade (`drop_constraint(None, …)`). Added a MetaData **`naming_convention`** on `Base` so constraints get deterministic names (`fk_tracks_user_id_users`, …).
+
+### D13 – Decided not to pursue fuzzy matching implementation
+
+**Date:** 2026-07-09
+
+**Fuzzy matching is a liability for stem separation** An issue occurred to me with the landmark fingerprinting approach: it would require a song library to reference as the source of truth. If I were to implement it only on audio files that users upload then the first upload basically becomes the "source of truth" that all other audio will fuzzy match against, which may not be the best for the stem separation since the audios can be different qualities. Thus, the fuzzy matching would actually be a liability if the goal is simply deduplication, which leads me back to my original answer of file hashing.
 
 ## Build approach
 
