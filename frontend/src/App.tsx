@@ -35,6 +35,7 @@ function App() {
     toggleLoop,
     seek,
     loop,
+    speedTrainerTest,
   } = useAudioPlayer();
 
   const { upload, tracks } = useLibrary();
@@ -117,6 +118,7 @@ function App() {
                 className="flex-1"
                 aria-label="tempo"
               />
+              <Button onClick={speedTrainerTest}> Test </Button>
               <span className="w-12 shrink-0 text-right text-sm tabular-nums text-muted-foreground">
                 {tempo.toFixed(2)}×
               </span>

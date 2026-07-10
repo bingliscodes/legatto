@@ -156,7 +156,7 @@ export function useAudioPlayer() {
     const A = 0,
       B = 2,
       reps = 2;
-    const ladder = [0.5, 0.6];
+    const ladder = [0.5, 0.9];
     const ctx = getContext();
     let nextBuffers: Map<string, AudioBuffer> = new Map();
 
@@ -166,16 +166,15 @@ export function useAudioPlayer() {
     }
 
     function playLevel(i: number) {
-      if (i >= ladder.length) return;
-
       // 1. install the buffer already rendered for ladder[i], seek to A, start
       //    playing it at tempo ladder[i]   (pass the tempo in — don't use state)
       for (const [name, buffer] of nextBuffers) {
         playbackBuffersRef.current.set(name, buffer);
       }
-      seek(A);
+      startOffsetRef.current = A;
       const when = ctx.currentTime + 0.1;
       startCtxTimeRef.current = when;
+      pause_playback();
       const sources: AudioBufferSourceNode[] = [];
 
       for (const [name, buffer] of playbackBuffersRef.current) {
@@ -203,20 +202,21 @@ export function useAudioPlayer() {
       playbackTempoRef.current = ladder[i];
       // Snapshot the region these sources were started with — now "what's sounding".
       playbackLoopRef.current = { active: true, start: A, end: B };
+      if (i + 1 < ladder.length) {
+        // 2. render-ahead: stretch ladder[i+1]'s buffer NOW, while this level plays,
+        //    and stash it where step 1 of the next call will look for it
+        const time = ((reps * (B - A)) / ladder[i]) * 1000; // Convert to ms;
+        for (const [name, buffer] of buffersRef.current) {
+          const currentBuffer = stretchBuffer(ctx, buffer, ladder[i + 1]);
+          nextBuffers.set(name, currentBuffer);
+        }
 
-      // 2. render-ahead: stretch ladder[i+1]'s buffer NOW, while this level plays,
-      //    and stash it where step 1 of the next call will look for it
-      const time = ((reps * (B - A)) / ladder[i]) * 1000; // Convert to ms;
-      for (const [name, buffer] of buffersRef.current) {
-        const currentBuffer = stretchBuffer(ctx, buffer, ladder[i + 1]);
-        nextBuffers.set(name, currentBuffer);
+        // 3. schedule the ONE transition: after (reps * (B - A) / ladder[i]) seconds,
+        //    call playLevel(i + 1)
+        setTimeout(() => {
+          playLevel(i + 1);
+        }, time);
       }
-
-      // 3. schedule the ONE transition: after (reps * (B - A) / ladder[i]) seconds,
-      //    call playLevel(i + 1)
-      setTimeout(() => {
-        playLevel(i + 1);
-      }, time);
     }
 
     playLevel(0);
@@ -352,5 +352,6 @@ export function useAudioPlayer() {
     duration: durationRef.current,
     getPlayhead: currentPlayhead,
     toggleLoop,
+    speedTrainerTest,
   };
 }
