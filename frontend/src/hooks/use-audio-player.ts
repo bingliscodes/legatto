@@ -152,6 +152,76 @@ export function useAudioPlayer() {
     playbackLoopRef.current = { active: shouldLoop, start: A, end: B };
   }
 
+  function speedTrainerTest() {
+    const A = 0,
+      B = 2,
+      reps = 2;
+    const ladder = [0.5, 0.6];
+    const ctx = getContext();
+    let nextBuffers: Map<string, AudioBuffer> = new Map();
+
+    for (const [name, buffer] of buffersRef.current) {
+      const currentBuffer = stretchBuffer(ctx, buffer, ladder[0]);
+      nextBuffers.set(name, currentBuffer);
+    }
+
+    function playLevel(i: number) {
+      if (i >= ladder.length) return;
+
+      // 1. install the buffer already rendered for ladder[i], seek to A, start
+      //    playing it at tempo ladder[i]   (pass the tempo in — don't use state)
+      for (const [name, buffer] of nextBuffers) {
+        playbackBuffersRef.current.set(name, buffer);
+      }
+      seek(A);
+      const when = ctx.currentTime + 0.1;
+      startCtxTimeRef.current = when;
+      const sources: AudioBufferSourceNode[] = [];
+
+      for (const [name, buffer] of playbackBuffersRef.current) {
+        const gain = gainsRef.current.get(name);
+        if (!gain) continue;
+
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(gain);
+        source.loop = true;
+        source.loopStart = A / ladder[i];
+        source.loopEnd = B / ladder[i];
+
+        source.onended = () => {
+          setIsPlaying(false);
+          isPlayingRef.current = false;
+        };
+        source.start(when, startOffsetRef.current / ladder[i]);
+        sources.push(source);
+      }
+
+      sourcesRef.current = sources;
+      setIsPlaying(true);
+      isPlayingRef.current = true;
+      playbackTempoRef.current = ladder[i];
+      // Snapshot the region these sources were started with — now "what's sounding".
+      playbackLoopRef.current = { active: true, start: A, end: B };
+
+      // 2. render-ahead: stretch ladder[i+1]'s buffer NOW, while this level plays,
+      //    and stash it where step 1 of the next call will look for it
+      const time = ((reps * (B - A)) / ladder[i]) * 1000; // Convert to ms;
+      for (const [name, buffer] of buffersRef.current) {
+        const currentBuffer = stretchBuffer(ctx, buffer, ladder[i + 1]);
+        nextBuffers.set(name, currentBuffer);
+      }
+
+      // 3. schedule the ONE transition: after (reps * (B - A) / ladder[i]) seconds,
+      //    call playLevel(i + 1)
+      setTimeout(() => {
+        playLevel(i + 1);
+      }, time);
+    }
+
+    playLevel(0);
+  }
+
   function pause() {
     // Compute where to start in stretched buffer as offset = playhead / tempo
     if (!isPlayingRef.current) return;
