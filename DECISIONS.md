@@ -213,11 +213,19 @@ Partially resolves D3 ("no accounts, but stay additive-ready"). The library was 
 - **FK-by-string resolves against `Base.metadata`** — `ForeignKey("users.id")` needs the `User` model _imported_ before the mappers configure, or `NoReferencedTableError` (an in-memory mapper-config error — the DB isn't even involved). Fixed once by importing every model in `app/models/__init__.py` (the runtime twin of the Alembic `env.py` import).
 - **Autogenerate emits `None` constraint names** → a broken downgrade (`drop_constraint(None, …)`). Added a MetaData **`naming_convention`** on `Base` so constraints get deterministic names (`fk_tracks_user_id_users`, …).
 
-### D13 – Decided not to pursue fuzzy matching implementation
+### D13 – Next feature: progressive-tempo "speed trainer" (fingerprinting + chord detection evaluated and rejected)
 
 **Date:** 2026-07-09
 
 **Fuzzy matching is a liability for stem separation** An issue occurred to me with the landmark fingerprinting approach: it would require a song library to reference as the source of truth. If I were to implement it only on audio files that users upload then the first upload basically becomes the "source of truth" that all other audio will fuzzy match against, which may not be the best for the stem separation since the audios can be different qualities. Thus, the fuzzy matching would actually be a liability if the goal is simply deduplication, which leads me back to my original answer of file hashing.
+
+(Two footnotes that don't change the call: for *dedup* the reference index would just be **our own catalog**, not a licensed corpus — so the "where do I get the songs" worry dissolves; the deeper reason it's wrong is that dedup wants *exact* matching, so fuzzy is the wrong tool regardless. Fingerprinting stays viable as a **standalone learning project** if the algorithm itself is the draw — just not in this product, and the considered *no* is itself a strong talking point.)
+
+**Also evaluated + rejected — chord/key detection.** Works on clean triadic pop/rock (chromagram → chord classification; key from the global pitch-class profile), but degrades badly on **distorted, extended-harmony, chord-melody, arpeggiated prog/metal — exactly the audience's music** (Polyphia et al.): distortion pollutes the chroma, extended/altered voicings exceed the usual maj/min/7th vocabulary, and arpeggios are genuinely ambiguous (chord vs. melody, window-size-dependent). Would demo well and fail on real use. (Edges worth noting: running detection on the *harmonic stems* (drums/vocals removed) cleans the chromagram, and *key* is more robust than per-chord — but neither fixes the core.)
+
+**Chosen — progressive-tempo "speed trainer."** Loop an A–B section, play N reps at a start tempo, then step up by a fixed interval and continue. Fits the **daily-habit north star**, builds directly on existing **A–B looping (D8)** + **pitch-preserving time-stretch**, and works on the music the audience actually plays. Honest tradeoff vs. chord detection: less algorithmically flashy, but it *ships* and *works* — a polished feature beats an impressive one that embarrasses you on your own songs.
+
+**Load-bearing engineering (to plan next):** SoundTouchJS is **offline pre-stretch** (D8) — a tempo change requires re-rendering the audio, not a real-time knob. A trainer ramping through tempos (50→55→60…) must **pre-render each step** (compute the ladder upfront, or render-ahead while the current tempo plays), **stitch seamless loop transitions across tempo changes**, and keep all stems in sync. That pipeline management is the interesting, tractable challenge.
 
 ## Build approach
 
