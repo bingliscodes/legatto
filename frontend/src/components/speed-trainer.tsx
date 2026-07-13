@@ -10,7 +10,7 @@ export default function SpeedTrainer() {
         max={1.0}
         placeholder="Starting Tempo"
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setStartTempo(e.target.value)
+          setStartTempo(Number(e.target.value))
         }
       />
       <input
@@ -19,7 +19,7 @@ export default function SpeedTrainer() {
         max={1.0}
         placeholder="Ending Tempo"
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setEndTempo(e.target.value)
+          setEndTempo(Number(e.target.value))
         }
       />
       <input
@@ -28,7 +28,7 @@ export default function SpeedTrainer() {
         max={99}
         placeholder="Step %"
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setStep(e.target.value)
+          setStep(Number(e.target.value))
         }
       />
       <input
@@ -37,7 +37,7 @@ export default function SpeedTrainer() {
         max={10}
         placeholder="# of repetitions"
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setReps(e.target.value)
+          setReps(Number(e.target.value))
         }
       />
     </>
