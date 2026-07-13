@@ -1,6 +1,9 @@
 import { useState } from "react";
 
-export function useSpeedTrainer() {
+type useSpeedTrainerProps = {
+  onStart: (ladder: number[], reps: number) => void;
+};
+export function useSpeedTrainer({ onStart: useSpeedTrainerProps }) {
   const [startTempo, setStartTempo] = useState<number>(0.5);
   const [endTempo, setEndTempo] = useState<number>(1.0);
   const [step, setStep] = useState<number>(5);

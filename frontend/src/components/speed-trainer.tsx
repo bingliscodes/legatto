@@ -1,5 +1,9 @@
 import { useSpeedTrainer } from "@/hooks/use-speed-trainer";
-export default function SpeedTrainer() {
+
+type useSpeedTrainerProps = {
+  onStart: (ladder: number[], reps: number) => void;
+};
+export default function SpeedTrainer({ onStart: useSpeedTrainerProps }) {
   const { setStartTempo, setEndTempo, setReps, setStep } = useSpeedTrainer();
 
   return (
