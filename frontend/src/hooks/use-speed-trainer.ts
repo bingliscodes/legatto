@@ -7,8 +7,11 @@ export function useSpeedTrainer() {
   const [reps, setReps] = useState<number>(3);
 
   const validate = (): string | null => {
-    if (endTempo <= startTempo) {
-      return "Invalid inputs to speed trainer. Please ensure that starting tempo is less than ending tempo.";
+    if (startTempo < 0.5 || endTempo > 1.0) {
+      return "Invalid inputs to speed trainer. Please ensure starting tempo is greater than than or equal to 0.5 and ending tempo is ";
+    }
+    if (startTempo < 0.5 || endTempo > 1.0 || endTempo <= startTempo) {
+      return "Invalid inputs to speed trainer. Please ensure that both tempo values are between 0.5 and 1 and starting tempo is less than ending tempo";
     }
     if (step <= 0 || reps < 1) {
       return "Invalid inputs to speed trainer. Please ensure that step % and # of reps are valid.";
