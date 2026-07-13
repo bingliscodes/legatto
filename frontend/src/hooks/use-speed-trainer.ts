@@ -10,7 +10,7 @@ export function useSpeedTrainer() {
     if (endTempo <= startTempo) {
       return "Invalid inputs to speed trainer. Please ensure that starting tempo is less than ending tempo.";
     }
-    if (step <= 0 || reps <= 1) {
+    if (step <= 0 || reps < 1) {
       return "Invalid inputs to speed trainer. Please ensure that step % and # of reps are valid.";
     }
     return null;
