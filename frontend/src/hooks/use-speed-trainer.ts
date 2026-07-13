@@ -28,8 +28,8 @@ export function useSpeedTrainer() {
       tempoLadder.push(+currentTempo.toFixed(3));
       currentTempo += step / 100; // Convert to %;
     }
-
-    tempoLadder.push(+endTempo.toFixed(3));
+    if (tempoLadder.at(-1) !== +endTempo.toFixed(3))
+      tempoLadder.push(+endTempo.toFixed(3));
     return tempoLadder;
   };
 
