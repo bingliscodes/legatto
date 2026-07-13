@@ -29,6 +29,7 @@ export default function SpeedTrainer({
       return;
     }
     onStart(buildLadder(), reps);
+    setError(null);
   };
   return (
     loopActive && (
@@ -70,6 +71,7 @@ export default function SpeedTrainer({
             setReps(Number(e.target.value))
           }
         />
+        {error && <p className="...">{error}</p>}
       </>
     )
   );
