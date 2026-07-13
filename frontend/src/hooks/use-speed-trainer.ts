@@ -7,12 +7,12 @@ export function useSpeedTrainer() {
   const [reps, setReps] = useState<number>(3);
 
   const onStartTempoChange = (e) => {
-    const newValue = e.target.value;
+    const newValue = Number(e.target.value);
     if (newValue >= 0.5) setStartTempo(newValue);
   };
 
   const onEndTempoChange = (e) => {
-    const newValue = e.target.value;
+    const newValue = Number(e.target.value);
     if (newValue <= 1.0) setEndTempo(newValue);
   };
 
@@ -22,12 +22,11 @@ export function useSpeedTrainer() {
     let currentTempo = startTempo;
 
     while (currentTempo <= endTempo) {
-      if (step + currentTempo > endTempo) {
-        tempoLadder.push(endTempo);
-      }
       tempoLadder.push(currentTempo);
       currentTempo += step;
     }
+
+    tempoLadder.push(endTempo);
     return tempoLadder;
   };
 
