@@ -110,8 +110,7 @@ export function useAudioPlayer() {
     const ctx = getContext();
     pause_playback();
 
-    const tempo =
-      durationRef.current / buffersRef.current.values().next().value!.duration;
+    const tempo = durationRef.current / buffers.values().next().value!.duration;
 
     const { active, start, end } = loop;
     const when = ctx.currentTime + 0.1;
