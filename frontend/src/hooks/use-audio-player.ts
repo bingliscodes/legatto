@@ -173,9 +173,8 @@ export function useAudioPlayer() {
       B = 2,
       reps = 2;
     const ladder = [0.5, 0.9];
-    const ctx = getContext();
     let nextBuffers: Map<string, AudioBuffer> = new Map();
-
+    const ctx = getContext();
     for (const [name, buffer] of buffersRef.current) {
       const currentBuffer = stretchBuffer(ctx, buffer, ladder[0]);
       nextBuffers.set(name, currentBuffer);
@@ -184,40 +183,7 @@ export function useAudioPlayer() {
     function playLevel(i: number) {
       // 1. install the buffer already rendered for ladder[i], seek to A, start
       //    playing it at tempo ladder[i]   (pass the tempo in — don't use state)
-      for (const [name, buffer] of nextBuffers) {
-        playbackBuffersRef.current.set(name, buffer);
-      }
-      startOffsetRef.current = A;
-      const when = ctx.currentTime + 0.1;
-      startCtxTimeRef.current = when;
-      pause_playback();
-      const sources: AudioBufferSourceNode[] = [];
-
-      for (const [name, buffer] of playbackBuffersRef.current) {
-        const gain = gainsRef.current.get(name);
-        if (!gain) continue;
-
-        const source = ctx.createBufferSource();
-        source.buffer = buffer;
-        source.connect(gain);
-        source.loop = true;
-        source.loopStart = A / ladder[i];
-        source.loopEnd = B / ladder[i];
-
-        source.onended = () => {
-          setIsPlaying(false);
-          isPlayingRef.current = false;
-        };
-        source.start(when, startOffsetRef.current / ladder[i]);
-        sources.push(source);
-      }
-
-      sourcesRef.current = sources;
-      setIsPlaying(true);
-      isPlayingRef.current = true;
-      playbackTempoRef.current = ladder[i];
-      // Snapshot the region these sources were started with — now "what's sounding".
-      playbackLoopRef.current = { active: true, start: A, end: B };
+      startSources(nextBuffers, A, { active: true, start: A, end: B });
       if (i + 1 < ladder.length) {
         // 2. render-ahead: stretch ladder[i+1]'s buffer NOW, while this level plays,
         //    and stash it where step 1 of the next call will look for it
