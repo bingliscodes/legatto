@@ -102,6 +102,52 @@ export function useAudioPlayer() {
     play();
   };
 
+  function startSources(
+    buffers: Map<string, AudioBuffer>,
+    startOffset: number,
+    loop: Loop,
+  ) {
+    const ctx = getContext();
+    pause_playback();
+
+    const tempo =
+      durationRef.current / buffersRef.current.values().next().value!.duration;
+
+    const { active, start, end } = loop;
+    const when = ctx.currentTime + 0.1;
+    startCtxTimeRef.current = when;
+    const sources: AudioBufferSourceNode[] = [];
+
+    for (const [name, buffer] of buffers) {
+      const gain = gainsRef.current.get(name);
+      if (!gain) continue;
+
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(gain);
+      // seconds into the stretched buffer = currentPlayhead() / tempo
+      if (active) {
+        source.loop = true;
+        source.loopStart = start / tempo;
+        source.loopEnd = end / tempo;
+      }
+      source.onended = () => {
+        setIsPlaying(false);
+        isPlayingRef.current = false;
+      };
+      source.start(when, startOffset / tempo);
+      sources.push(source);
+    }
+
+    sourcesRef.current = sources;
+    setIsPlaying(true);
+    isPlayingRef.current = true;
+    playbackTempoRef.current = tempo;
+    startOffsetRef.current = startOffset;
+    playbackBuffersRef.current = buffers;
+    // Snapshot the region these sources were started with — now "what's sounding".
+    playbackLoopRef.current = { active, start, end };
+  }
   function play(clamp = true) {
     const ctx = getContext();
     pause_playback();
