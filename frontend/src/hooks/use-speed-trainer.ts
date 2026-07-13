@@ -6,14 +6,11 @@ export function useSpeedTrainer() {
   const [step, setStep] = useState<number>(0.05);
   const [reps, setReps] = useState<number>(3);
 
-  const onStartTempoChange = (e) => {
-    const newValue = Number(e.target.value);
-    if (newValue >= 0.5) setStartTempo(newValue);
-  };
-
-  const onEndTempoChange = (e) => {
-    const newValue = Number(e.target.value);
-    if (newValue <= 1.0) setEndTempo(newValue);
+  const validate = (): string | null => {
+    if (endTempo >= startTempo || reps < 1) {
+      return "Invalid inputs to speed trainer. Please ensure that starting tempo is less than ending tempo";
+    }
+    return null;
   };
 
   const buildLadder = (): number[] => {
@@ -23,7 +20,7 @@ export function useSpeedTrainer() {
 
     while (currentTempo <= endTempo) {
       tempoLadder.push(+currentTempo.toFixed(3));
-      currentTempo += step;
+      currentTempo += step / 100; // Convert to %;
     }
 
     tempoLadder.push(+endTempo.toFixed(3));
@@ -35,10 +32,11 @@ export function useSpeedTrainer() {
     endTempo,
     step,
     reps,
-    onStartTempoChange,
-    onEndTempoChange,
+    setStartTempo,
+    setEndTempo,
     setStep,
     setReps,
+    validate,
     buildLadder,
   };
 }
