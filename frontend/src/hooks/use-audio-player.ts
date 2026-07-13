@@ -106,14 +106,15 @@ export function useAudioPlayer() {
     buffers: Map<string, AudioBuffer>,
     startOffset: number,
     loop: Loop,
-  ) {
+    when: number = getContext().currentTime + 0.1,
+  ): { when: number; tempo: number } {
     const ctx = getContext();
-    pause_playback();
+    // Stop the OLD sources exactly when the new ones begin — no gap, no overlap.
+    pause_playback(when);
 
     const tempo = durationRef.current / buffers.values().next().value!.duration;
 
     const { active, start, end } = loop;
-    const when = ctx.currentTime + 0.1;
     startCtxTimeRef.current = when;
     const sources: AudioBufferSourceNode[] = [];
 
@@ -143,9 +144,11 @@ export function useAudioPlayer() {
     isPlayingRef.current = true;
     playbackTempoRef.current = tempo;
     startOffsetRef.current = startOffset;
-    playbackBuffersRef.current = buffers;
+    playbackBuffersRef.current = new Map(buffers);
     // Snapshot the region these sources were started with — now "what's sounding".
     playbackLoopRef.current = { active, start, end };
+
+    return { when, tempo };
   }
   function play(clamp = true) {
     const { active, start: A, end: B } = loopRef.current;
@@ -175,29 +178,43 @@ export function useAudioPlayer() {
     const ladder = [0.5, 0.9];
     let nextBuffers: Map<string, AudioBuffer> = new Map();
     const ctx = getContext();
+    pause_playback();
     for (const [name, buffer] of buffersRef.current) {
       const currentBuffer = stretchBuffer(ctx, buffer, ladder[0]);
       nextBuffers.set(name, currentBuffer);
     }
 
-    function playLevel(i: number) {
-      // 1. install the buffer already rendered for ladder[i], seek to A, start
-      //    playing it at tempo ladder[i]   (pass the tempo in — don't use state)
-      startSources(nextBuffers, A, { active: true, start: A, end: B });
+    function playLevel(i: number, when?: number) {
+      // Start this level. `when` is the exact audio-clock time to begin at:
+      // undefined for level 0 (startSources uses "now + 0.1"), and the previous
+      // level's rep-boundary for every level after. startSources hands back the
+      // time it actually started and the tempo it derived from the buffers.
+      const { when: startedAt, tempo } = startSources(
+        nextBuffers,
+        A,
+        { active: true, start: A, end: B },
+        when,
+      );
+
       if (i + 1 < ladder.length) {
-        // 2. render-ahead: stretch ladder[i+1]'s buffer NOW, while this level plays,
-        //    and stash it where step 1 of the next call will look for it
-        const time = ((reps * (B - A)) / ladder[i]) * 1000; // Convert to ms;
+        // Render-ahead into a FRESH map so we never mutate the one now playing.
+        nextBuffers = new Map();
         for (const [name, buffer] of buffersRef.current) {
-          const currentBuffer = stretchBuffer(ctx, buffer, ladder[i + 1]);
-          nextBuffers.set(name, currentBuffer);
+          nextBuffers.set(name, stretchBuffer(ctx, buffer, ladder[i + 1]));
         }
 
-        // 3. schedule the ONE transition: after (reps * (B - A) / ladder[i]) seconds,
-        //    call playLevel(i + 1)
-        setTimeout(() => {
-          playLevel(i + 1);
-        }, time);
+        // The exact audio-clock time this level's reps finish. Uses the SAME
+        // tempo the loop uses, so the timer can't drift from the audio.
+        const boundary = startedAt + (reps * (B - A)) / tempo;
+
+        // Wake up a little BEFORE the boundary to build the next level's
+        // sources; they're scheduled to START exactly at `boundary`, so there's
+        // no gap. The audio clock — not setTimeout — decides when audio starts.
+        const lead = 0.1;
+        setTimeout(
+          () => playLevel(i + 1, boundary),
+          (boundary - lead - ctx.currentTime) * 1000,
+        );
       }
     }
 
@@ -225,11 +242,12 @@ export function useAudioPlayer() {
     isPlayingRef.current = false;
   }
 
-  function pause_playback() {
+  function pause_playback(when?: number) {
     sourcesRef.current.forEach((s) => {
       s.onended = null;
       try {
-        s.stop();
+        if (when === undefined) s.stop();
+        else s.stop(when);
       } catch {
         /* already stopped — fine */
       }
@@ -283,7 +301,6 @@ export function useAudioPlayer() {
   useEffect(() => {
     const timeout = setTimeout(() => {
       const ctx = getContext();
-
       if (tempo === 1) {
         playbackBuffersRef.current = new Map(buffersRef.current);
       } else {
