@@ -31,7 +31,7 @@ export default function SpeedTrainer({
     onStart(buildLadder(), reps);
   };
   return (
-    { loopActive } && (
+    loopActive && (
       <>
         <Button onClick={onClickStart}>Start Speed Trainer</Button>
         <input
