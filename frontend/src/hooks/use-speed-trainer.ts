@@ -21,7 +21,7 @@ export function useSpeedTrainer() {
 
     let currentTempo: number = startTempo;
 
-    while (currentTempo <= endTempo) {
+    while (currentTempo < endTempo) {
       tempoLadder.push(+currentTempo.toFixed(3));
       currentTempo += step / 100; // Convert to %;
     }
