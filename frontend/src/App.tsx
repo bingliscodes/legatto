@@ -14,6 +14,7 @@ import { useLibrary } from "@/hooks/use-library";
 import { API_BASE, getTrack, type Track } from "./lib/api";
 import Playhead from "./components/playhead";
 import TrackList from "./components/track-list";
+import SpeedTrainer from "./components/speed-trainer";
 
 function App() {
   const {
@@ -35,7 +36,7 @@ function App() {
     toggleLoop,
     seek,
     loop,
-    speedTrainerTest,
+    startTrainer,
   } = useAudioPlayer();
 
   const { upload, tracks } = useLibrary();
@@ -118,7 +119,10 @@ function App() {
                 className="flex-1"
                 aria-label="tempo"
               />
-              <Button onClick={speedTrainerTest}> Test </Button>
+              <SpeedTrainer
+                onStart={(ladder, reps) => startTrainer(ladder, reps)}
+                loopActive={loop.active}
+              />
               <span className="w-12 shrink-0 text-right text-sm tabular-nums text-muted-foreground">
                 {tempo.toFixed(2)}×
               </span>

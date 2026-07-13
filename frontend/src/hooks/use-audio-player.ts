@@ -171,11 +171,7 @@ export function useAudioPlayer() {
     });
   }
 
-  function speedTrainerTest() {
-    const A = 0,
-      B = 2,
-      reps = 2;
-    const ladder = [0.5, 0.9];
+  function startTrainer(ladder: number[], reps: number) {
     let nextBuffers: Map<string, AudioBuffer> = new Map();
     const ctx = getContext();
     pause_playback();
@@ -183,7 +179,7 @@ export function useAudioPlayer() {
       const currentBuffer = stretchBuffer(ctx, buffer, ladder[0]);
       nextBuffers.set(name, currentBuffer);
     }
-
+    const { start: A, end: B } = loop;
     function playLevel(i: number, when?: number) {
       // Start this level. `when` is the exact audio-clock time to begin at:
       // undefined for level 0 (startSources uses "now + 0.1"), and the previous
@@ -351,6 +347,6 @@ export function useAudioPlayer() {
     duration: durationRef.current,
     getPlayhead: currentPlayhead,
     toggleLoop,
-    speedTrainerTest,
+    startTrainer,
   };
 }
