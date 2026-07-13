@@ -179,7 +179,7 @@ export function useAudioPlayer() {
       const currentBuffer = stretchBuffer(ctx, buffer, ladder[0]);
       nextBuffers.set(name, currentBuffer);
     }
-    const { start: A, end: B } = loop;
+    const { start: A, end: B } = loopRef.current;
     function playLevel(i: number, when?: number) {
       // Start this level. `when` is the exact audio-clock time to begin at:
       // undefined for level 0 (startSources uses "now + 0.1"), and the previous
