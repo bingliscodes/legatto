@@ -19,14 +19,14 @@ export function useSpeedTrainer() {
   const buildLadder = (): number[] => {
     const tempoLadder: number[] = [];
 
-    let currentTempo = startTempo;
+    let currentTempo: number = startTempo;
 
     while (currentTempo <= endTempo) {
-      tempoLadder.push(currentTempo);
+      tempoLadder.push(+currentTempo.toFixed(3));
       currentTempo += step;
     }
 
-    tempoLadder.push(endTempo);
+    tempoLadder.push(+endTempo.toFixed(3));
     return tempoLadder;
   };
 
