@@ -119,10 +119,7 @@ function App() {
                 className="flex-1"
                 aria-label="tempo"
               />
-              <SpeedTrainer
-                onStart={(ladder, reps) => startTrainer(ladder, reps)}
-                loopActive={loop.active}
-              />
+              <SpeedTrainer onStart={startTrainer} loopActive={loop.active} />
               <span className="w-12 shrink-0 text-right text-sm tabular-nums text-muted-foreground">
                 {tempo.toFixed(2)}×
               </span>
