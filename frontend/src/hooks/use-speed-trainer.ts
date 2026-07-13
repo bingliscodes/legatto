@@ -3,7 +3,7 @@ import { useState } from "react";
 export function useSpeedTrainer() {
   const [startTempo, setStartTempo] = useState<number>(0.5);
   const [endTempo, setEndTempo] = useState<number>(1.0);
-  const [step, setStep] = useState<number>(0.05);
+  const [step, setStep] = useState<number>(5);
   const [reps, setReps] = useState<number>(3);
 
   const validate = (): string | null => {
