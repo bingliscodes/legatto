@@ -149,9 +149,6 @@ export function useAudioPlayer() {
     playbackLoopRef.current = { active, start, end };
   }
   function play(clamp = true) {
-    const ctx = getContext();
-    pause_playback();
-
     const { active, start: A, end: B } = loopRef.current;
 
     if (
@@ -165,37 +162,11 @@ export function useAudioPlayer() {
     const shouldLoop =
       active && startOffsetRef.current >= A && startOffsetRef.current < B;
 
-    const when = ctx.currentTime + 0.1;
-    startCtxTimeRef.current = when;
-    const sources: AudioBufferSourceNode[] = [];
-
-    for (const [name, buffer] of playbackBuffersRef.current) {
-      const gain = gainsRef.current.get(name);
-      if (!gain) continue;
-
-      const source = ctx.createBufferSource();
-      source.buffer = buffer;
-      source.connect(gain);
-      // seconds into the stretched buffer = currentPlayhead() / tempo
-      if (shouldLoop) {
-        source.loop = true;
-        source.loopStart = A / tempo;
-        source.loopEnd = B / tempo;
-      }
-      source.onended = () => {
-        setIsPlaying(false);
-        isPlayingRef.current = false;
-      };
-      source.start(when, startOffsetRef.current / tempo);
-      sources.push(source);
-    }
-
-    sourcesRef.current = sources;
-    setIsPlaying(true);
-    isPlayingRef.current = true;
-    playbackTempoRef.current = tempo;
-    // Snapshot the region these sources were started with — now "what's sounding".
-    playbackLoopRef.current = { active: shouldLoop, start: A, end: B };
+    startSources(playbackBuffersRef.current, startOffsetRef.current, {
+      active: shouldLoop,
+      start: A,
+      end: B,
+    });
   }
 
   function speedTrainerTest() {
