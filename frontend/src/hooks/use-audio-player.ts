@@ -217,6 +217,14 @@ export function useAudioPlayer() {
           (boundary - lead - ctx.currentTime) * 1000,
         );
         trainerTimeoutRef.current = timeoutId;
+      } else {
+        const finalTimeoutId = setTimeout(
+          () => {
+            setIsTraining(false);
+          },
+          ((reps * (B - A)) / tempo) * 1000,
+        );
+        trainerTimeoutRef.current = finalTimeoutId;
       }
     }
 
