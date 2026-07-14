@@ -175,6 +175,8 @@ export function useAudioPlayer() {
   }
 
   function startTrainer(ladder: number[], reps: number) {
+    clearTrainerTimer();
+    setIsTraining(true);
     let nextBuffers: Map<string, AudioBuffer> = new Map();
     const ctx = getContext();
     pause_playback();
@@ -210,10 +212,11 @@ export function useAudioPlayer() {
         // sources; they're scheduled to START exactly at `boundary`, so there's
         // no gap. The audio clock — not setTimeout — decides when audio starts.
         const lead = 0.1;
-        setTimeout(
+        const timeoutId = setTimeout(
           () => playLevel(i + 1, boundary),
           (boundary - lead - ctx.currentTime) * 1000,
         );
+        trainerTimeoutRef.current = timeoutId;
       }
     }
 
