@@ -239,12 +239,6 @@ export function useAudioPlayer() {
     }
   };
 
-  const stopTrainer = () => {
-    clearTrainerTimer();
-    stop();
-    setIsTraining(false);
-  };
-
   function pause() {
     // Compute where to start in stretched buffer as offset = playhead / tempo
     if (!isPlayingRef.current) return;
@@ -259,11 +253,13 @@ export function useAudioPlayer() {
   }
 
   function stop() {
+    clearTrainerTimer();
     pause_playback();
     startOffsetRef.current = 0;
     sourcesRef.current = [];
     setIsPlaying(false);
     isPlayingRef.current = false;
+    setIsTraining(false);
   }
 
   function pause_playback(when?: number) {
