@@ -115,7 +115,9 @@ function App() {
               >
                 Stop
               </Button>
-              <Button onClick={toggleLoop}>Toggle Loop</Button>
+              <Button onClick={toggleLoop} disabled={isTraining}>
+                Toggle Loop
+              </Button>
               <Slider
                 value={[tempo]}
                 disabled={isTraining}
