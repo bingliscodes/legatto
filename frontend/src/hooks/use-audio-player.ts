@@ -13,6 +13,7 @@ export function useAudioPlayer() {
   const [tempo, setTempo] = useState<number>(1.0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [loop, setLoop] = useState<Loop>({ active: false, start: 0, end: 0 });
+  const [isTraining, setIsTraining] = useState(false);
 
   // Decoded audio + the persistent per-stem gain nodes. These are refs, not
   // state: they're mutable audio objects that must survive re-renders and
@@ -32,6 +33,8 @@ export function useAudioPlayer() {
   const playbackLoopRef = useRef(loop);
   const isPlayingRef = useRef<boolean>(isPlaying);
   const loopRef = useRef(loop);
+
+  const trainerTimeoutRef = useRef<number | null>(null);
 
   // Keep loop refs in sync with loop state
   useEffect(() => {
@@ -216,6 +219,13 @@ export function useAudioPlayer() {
 
     playLevel(0);
   }
+
+  const clearTrainerTimer = () => {
+    if (trainerTimeoutRef.current) {
+      clearTimeout(trainerTimeoutRef.current);
+      trainerTimeoutRef.current = null;
+    }
+  };
 
   function pause() {
     // Compute where to start in stretched buffer as offset = playhead / tempo
