@@ -240,6 +240,8 @@ export function useAudioPlayer() {
     }
   };
 
+  useEffect(() => () => clearTrainerTimer(), []);
+
   function pause() {
     // Compute where to start in stretched buffer as offset = playhead / tempo
     if (!isPlayingRef.current) return;
