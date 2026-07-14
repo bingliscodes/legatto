@@ -64,18 +64,18 @@ export default function SpeedTrainer({
 
       <div className="flex flex-wrap items-end gap-3">
         <NumberField
-          label="Start tempo"
-          min={0.5}
-          max={1.0}
-          step={0.05}
+          label="Start tempo %"
+          min={50}
+          max={100}
+          step={5}
           value={startTempo}
           onChange={(e) => setStartTempo(Number(e.target.value))}
         />
         <NumberField
-          label="End tempo"
-          min={0.5}
-          max={1.0}
-          step={0.05}
+          label="End tempo %"
+          min={50}
+          max={100}
+          step={5}
           value={endTempo}
           onChange={(e) => setEndTempo(Number(e.target.value))}
         />

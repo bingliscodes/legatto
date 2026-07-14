@@ -1,15 +1,12 @@
 import { useState } from "react";
 
 export function useSpeedTrainer() {
-  const [startTempo, setStartTempo] = useState<number>(0.5);
-  const [endTempo, setEndTempo] = useState<number>(1.0);
+  const [startTempo, setStartTempo] = useState<number>(50);
+  const [endTempo, setEndTempo] = useState<number>(100);
   const [step, setStep] = useState<number>(5);
   const [reps, setReps] = useState<number>(3);
 
   const validate = (): string | null => {
-    if (startTempo < 0.5 || endTempo > 1.0) {
-      return "Invalid inputs to speed trainer. Please ensure starting tempo is greater than than or equal to 0.5 and ending tempo is ";
-    }
     if (startTempo < 0.5 || endTempo > 1.0 || endTempo <= startTempo) {
       return "Invalid inputs to speed trainer. Please ensure that both tempo values are between 0.5 and 1 and starting tempo is less than ending tempo";
     }
@@ -25,11 +22,11 @@ export function useSpeedTrainer() {
     let currentTempo: number = startTempo;
 
     while (currentTempo < endTempo) {
-      tempoLadder.push(+currentTempo.toFixed(3));
-      currentTempo += step / 100; // Convert to %;
+      tempoLadder.push(+(currentTempo / 100).toFixed(3));
+      currentTempo += step;
     }
-    if (tempoLadder.at(-1) !== +endTempo.toFixed(3))
-      tempoLadder.push(+endTempo.toFixed(3));
+    if (tempoLadder.at(-1) !== +(endTempo / 100).toFixed(3))
+      tempoLadder.push(+(endTempo / 100).toFixed(3));
     return tempoLadder;
   };
 
