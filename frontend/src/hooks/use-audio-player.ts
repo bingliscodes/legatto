@@ -218,11 +218,12 @@ export function useAudioPlayer() {
         );
         trainerTimeoutRef.current = timeoutId;
       } else {
+        const boundary = startedAt + (reps * (B - A)) / tempo;
         const finalTimeoutId = setTimeout(
           () => {
             setIsTraining(false);
           },
-          ((reps * (B - A)) / tempo) * 1000,
+          (boundary - ctx.currentTime) * 1000,
         );
         trainerTimeoutRef.current = finalTimeoutId;
       }
@@ -232,7 +233,7 @@ export function useAudioPlayer() {
   }
 
   const clearTrainerTimer = () => {
-    if (trainerTimeoutRef.current) {
+    if (trainerTimeoutRef.current !== null) {
       clearTimeout(trainerTimeoutRef.current);
       trainerTimeoutRef.current = null;
     }
