@@ -10,3 +10,4 @@ celery[redis]
 celery-types
 boto3
 runpod
+mutagen

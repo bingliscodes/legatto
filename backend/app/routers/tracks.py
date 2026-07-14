@@ -5,10 +5,12 @@ from sqlalchemy import select
 from uuid import uuid4
 from pathlib import Path
 import uuid
+import io
+from mutagen import File as MutagenFile
 
 from app.storage import get_storage
 from app.tasks import stem_separator
-from app.config import STORAGE_ROOT
+from app.config import STORAGE_ROOT, max_audio_duration_seconds
 from app.database import get_db
 from app.models.track import Track
 from app.schemas.track import TrackResponse, TrackDetailResponse, TrackStatus
@@ -42,7 +44,24 @@ async def process_audio(
     track_id = str(uuid4())
 
     data = await audio_file.read()
-    input_key = f"{track_id}/{audio_file.filename}"
+
+    # ––– Duration guard –––
+    audio = MutagenFile(io.BytesIO(data))
+
+    duration = getattr(audio.info, "length", None) if audio else None
+    if duration is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Error processing uploaded file. Please ensure it is a supported audio file type (MP3, WAV, FLAC, M4A, OGG).",
+        )
+
+    if duration > max_audio_duration_seconds:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Audio exceeds the {max_audio_duration_seconds // 60}-minute limit",
+        )
+
+    input_key = f"{track_id}/{Path(audio_file.filename).name}"
     output_prefix = f"{track_id}/stems/"
     storage.write_file(input_key, data)
 

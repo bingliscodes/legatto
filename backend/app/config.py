@@ -34,6 +34,8 @@ class Settings(BaseSettings):
     session_secret: str
     session_https_only: bool = False
 
+    max_audio_duration_seconds: int = 300
+
 
 settings = Settings()
 
