@@ -238,6 +238,12 @@ export function useAudioPlayer() {
     }
   };
 
+  const stopTrainer = () => {
+    clearTrainerTimer();
+    stop();
+    setIsTraining(false);
+  };
+
   function pause() {
     // Compute where to start in stretched buffer as offset = playhead / tempo
     if (!isPlayingRef.current) return;
