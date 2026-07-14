@@ -375,5 +375,7 @@ export function useAudioPlayer() {
     getPlayhead: currentPlayhead,
     toggleLoop,
     startTrainer,
+    isTraining,
+    stopTrainer,
   };
 }

@@ -37,6 +37,8 @@ function App() {
     seek,
     loop,
     startTrainer,
+    isTraining,
+    stopTrainer,
   } = useAudioPlayer();
 
   const { upload, tracks } = useLibrary();
@@ -100,18 +102,23 @@ function App() {
                   await upload(file);
                 }}
               />
-              <Button onClick={() => play()} disabled={!loaded}>
+              <Button onClick={() => play()} disabled={!loaded || isTraining}>
                 Play
               </Button>
-              <Button onClick={pause} disabled={!loaded}>
+              <Button onClick={pause} disabled={!loaded || isTraining}>
                 Pause
               </Button>
-              <Button variant="outline" onClick={stop} disabled={!isPlaying}>
+              <Button
+                variant="outline"
+                onClick={stop}
+                disabled={!isPlaying || isTraining}
+              >
                 Stop
               </Button>
               <Button onClick={toggleLoop}>Toggle Loop</Button>
               <Slider
                 value={[tempo]}
+                disabled={isTraining}
                 min={0.5}
                 max={1.0}
                 step={0.01}
