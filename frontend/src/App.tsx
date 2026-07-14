@@ -130,7 +130,12 @@ function App() {
                 {tempo.toFixed(2)}×
               </span>
             </div>
-            <SpeedTrainer onStart={startTrainer} loopActive={loop.active} />
+            <SpeedTrainer
+              onStart={startTrainer}
+              onStop={stopTrainer}
+              isTraining={isTraining}
+              loopActive={loop.active}
+            />
             <Playhead
               duration={duration}
               getPlayhead={getPlayhead}

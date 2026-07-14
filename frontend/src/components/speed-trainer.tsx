@@ -4,6 +4,8 @@ import { Button } from "./ui/button";
 
 type SpeedTrainerProps = {
   onStart: (ladder: number[], reps: number) => void;
+  onStop: () => void;
+  isTraining: boolean;
   loopActive: boolean;
 };
 
@@ -26,6 +28,8 @@ function NumberField({
 
 export default function SpeedTrainer({
   onStart,
+  onStop,
+  isTraining,
   loopActive,
 }: SpeedTrainerProps) {
   const {
@@ -95,8 +99,11 @@ export default function SpeedTrainer({
           value={reps}
           onChange={(e) => setReps(Number(e.target.value))}
         />
-        <Button onClick={onClickStart} className="shrink-0">
-          Start
+        <Button
+          onClick={!isTraining ? onClickStart : onStop}
+          className="shrink-0"
+        >
+          {!isTraining ? "Start" : "Stop"}
         </Button>
       </div>
 
