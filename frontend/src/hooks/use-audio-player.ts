@@ -222,6 +222,7 @@ export function useAudioPlayer() {
         const finalTimeoutId = setTimeout(
           () => {
             setIsTraining(false);
+            setTempo(ladder[ladder.length - 1]);
           },
           (boundary - ctx.currentTime) * 1000,
         );
@@ -373,6 +374,5 @@ export function useAudioPlayer() {
     toggleLoop,
     startTrainer,
     isTraining,
-    stopTrainer,
   };
 }
