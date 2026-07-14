@@ -38,7 +38,6 @@ function App() {
     loop,
     startTrainer,
     isTraining,
-    stopTrainer,
   } = useAudioPlayer();
 
   const { upload, tracks } = useLibrary();
@@ -134,7 +133,7 @@ function App() {
             </div>
             <SpeedTrainer
               onStart={startTrainer}
-              onStop={stopTrainer}
+              onStop={stop}
               isTraining={isTraining}
               loopActive={loop.active}
             />
