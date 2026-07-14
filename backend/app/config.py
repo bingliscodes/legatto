@@ -43,5 +43,6 @@ settings = Settings()
 # STORAGE_ROOT derives from the (env-driven) storage_dir; SHIFTS/OVERLAP are
 # static tuning constants, not env config, so they stay plain constants.
 STORAGE_ROOT = Path(settings.storage_dir).resolve()
+ALLOWED_UPLOAD_EXTENSIONS = {".mp3", ".wav", ".flac", ".m4a", ".ogg"}
 SHIFTS = 1
 OVERLAP = 0.25

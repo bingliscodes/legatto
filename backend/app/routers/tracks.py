@@ -10,7 +10,8 @@ from mutagen import File as MutagenFile
 
 from app.storage import get_storage
 from app.tasks import stem_separator
-from app.config import STORAGE_ROOT, max_audio_duration_seconds
+from app.config import STORAGE_ROOT, ALLOWED_UPLOAD_EXTENSIONS
+from app.config import settings
 from app.database import get_db
 from app.models.track import Track
 from app.schemas.track import TrackResponse, TrackDetailResponse, TrackStatus
@@ -45,6 +46,11 @@ async def process_audio(
 
     data = await audio_file.read()
 
+    ext = Path(audio_file.filename or "").suffix.lower()
+    if ext not in ALLOWED_UPLOAD_EXTENSIONS:
+        raise HTTPException(
+            400, detail="Unsupported format. Upload MP3, WAV, FLAC, M4A, or OGG."
+        )
     # ––– Duration guard –––
     audio = MutagenFile(io.BytesIO(data))
 
@@ -55,10 +61,10 @@ async def process_audio(
             detail="Error processing uploaded file. Please ensure it is a supported audio file type (MP3, WAV, FLAC, M4A, OGG).",
         )
 
-    if duration > max_audio_duration_seconds:
+    if duration > settings.max_audio_duration_seconds:
         raise HTTPException(
             status_code=422,
-            detail=f"Audio exceeds the {max_audio_duration_seconds // 60}-minute limit",
+            detail=f"Audio exceeds the {settings.max_audio_duration_seconds // 60}-minute limit",
         )
 
     input_key = f"{track_id}/{Path(audio_file.filename).name}"
