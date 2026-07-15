@@ -36,8 +36,8 @@ class Settings(BaseSettings):
 
     max_audio_duration_seconds: int = 300
 
-    upload_rate_per_hour: int = 10
-    upload_rate_per_day: int = 30
+    upload_rate_per_hour: int = 5
+    upload_rate_per_day: int = 10
     global_daily_cap: int = 65
 
 
