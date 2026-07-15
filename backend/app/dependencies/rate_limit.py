@@ -15,16 +15,13 @@ async def hit(key: str, limit: int, window_seconds: int) -> None:
 
     INCR the key (creates it at 1 if new). On that FIRST hit we set the TTL, so
     the window is measured from the first request and resets cleanly when it
-    expires — we deliberately do NOT refresh the TTL on later hits (that would
-    let a persistent hammerer stay locked out forever). Once the count passes
-    `limit`, reject with 429 + a Retry-After telling them when the window frees.
+    expires.
+    Once the count passes limit, reject with 429 + a Retry-After telling them when the window frees.
 
     Note: rejected requests still INCR, so hammering keeps you locked out for the
     window — that's intentional. (INCR-then-EXPIRE isn't atomic; a crash in the
     ~microsecond gap could strand a key without a TTL. Negligible here; a Lua
     script / pipeline is the bulletproof version if we ever want it.)
-
-    Reused as-is for the global daily cap — just a different key/limit/window.
     """
     count = await redis_client.incr(key)
     if count == 1:
@@ -49,5 +46,3 @@ async def rate_limit_upload(request: Request) -> None:
 
     await hit(f"rl:upload:h:{ip}", settings.upload_rate_per_hour, 3600)
     await hit(f"rl:upload:d:{ip}", settings.upload_rate_per_day, 86400)
-    # TODO(you): add the DAY window — same helper, different key + limit + seconds
-    #   (settings.upload_rate_per_day, 86400). One line, mirrors the hour above.

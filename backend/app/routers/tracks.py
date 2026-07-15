@@ -48,22 +48,22 @@ async def process_audio(
     track_id = str(uuid4())
 
     data = await audio_file.read()
-
     ext = Path(audio_file.filename or "").suffix.lower()
     if ext not in ALLOWED_UPLOAD_EXTENSIONS:
         raise HTTPException(
             400, detail="Unsupported format. Upload MP3, WAV, FLAC, M4A, or OGG."
         )
     # ––– Duration guard –––
-    audio = MutagenFile(io.BytesIO(data))
+    bio = io.BytesIO(data)
+    bio.name = audio_file.filename or ""
+    audio = MutagenFile(bio)
 
-    duration = getattr(audio.info, "length", None) if audio else None
+    duration = getattr(audio.info, "length", None) if audio is not None else None
     if duration is None:
         raise HTTPException(
             status_code=400,
             detail="Error processing uploaded file. Please ensure it is a supported audio file type (MP3, WAV, FLAC, M4A, OGG).",
         )
-
     if duration > settings.max_audio_duration_seconds:
         raise HTTPException(
             status_code=422,

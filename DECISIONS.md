@@ -213,7 +213,7 @@ Partially resolves D3 ("no accounts, but stay additive-ready"). The library was 
 - **FK-by-string resolves against `Base.metadata`** — `ForeignKey("users.id")` needs the `User` model _imported_ before the mappers configure, or `NoReferencedTableError` (an in-memory mapper-config error — the DB isn't even involved). Fixed once by importing every model in `app/models/__init__.py` (the runtime twin of the Alembic `env.py` import).
 - **Autogenerate emits `None` constraint names** → a broken downgrade (`drop_constraint(None, …)`). Added a MetaData **`naming_convention`** on `Base` so constraints get deterministic names (`fk_tracks_user_id_users`, …).
 
-### D13 – Next feature: progressive-tempo "speed trainer" (fingerprinting + chord detection evaluated and rejected)
+### D13 – Progressive-tempo "speed trainer" (fingerprinting + chord detection evaluated and rejected)
 
 **Date:** 2026-07-09
 
@@ -226,6 +226,25 @@ Partially resolves D3 ("no accounts, but stay additive-ready"). The library was 
 **Chosen — progressive-tempo "speed trainer."** Loop an A–B section, play N reps at a start tempo, then step up by a fixed interval and continue. Fits the **daily-habit north star**, builds directly on existing **A–B looping (D8)** + **pitch-preserving time-stretch**, and works on the music the audience actually plays. Honest tradeoff vs. chord detection: less algorithmically flashy, but it *ships* and *works* — a polished feature beats an impressive one that embarrasses you on your own songs.
 
 **Load-bearing engineering (to plan next):** SoundTouchJS is **offline pre-stretch** (D8) — a tempo change requires re-rendering the audio, not a real-time knob. A trainer ramping through tempos (50→55→60…) must **pre-render each step** (compute the ladder upfront, or render-ahead while the current tempo plays), **stitch seamless loop transitions across tempo changes**, and keep all stems in sync. That pipeline management is the interesting, tractable challenge.
+
+**Shipped 2026-07-14 — how it was actually built.** Config lives in a **colocated hook** (`frontend/src/hooks/use-speed-trainer.ts`): start/end/step as whole-number percents + reps, `validate()` (bounds + `end > start` + `step > 0`), and `buildLadder()` — which steps in *integer* percents and divides by 100 only at push time, so float-accumulation never enters the ladder. The `SpeedTrainer` component owns that config and receives an `onStart(ladder, reps)` callback **down** plus `loopActive`/`isTraining`/`onStop` — state is *not* lifted (colocation: keep state where it's used; hand the *action* down, not the config up). The engine is `useAudioPlayer.startTrainer`, which reads the A–B region from `loopRef`.
+
+Four ideas carry it:
+
+- **Render-ahead one level.** While level _i_ plays, pre-stretch level _i+1_ into a fresh Map. Buys the seamlessness of pre-computing the whole ladder without the waste of rendering steps the user never reaches — the "third door" past eager-vs-lazy.
+- **Audio-clock scheduling.** SoundTouch is offline pre-stretch, so the transitions are the hard part. The next level's `source.start` is scheduled at the exact `boundary = startedAt + reps·(B−A)/tempo` on `ctx.currentTime`; `setTimeout` only wakes ~0.1 s early to *build* the sources. The JS timer decides *when to prepare*; the audio clock decides *when sound happens*.
+- **Mechanism/policy split.** Extracted `startSources(buffers, offset, loop, when)` — pure mechanism (build + start + record "what's sounding") — shared by `play` (clamp/shouldLoop policy) and `startTrainer` (start-at-A, walk-the-ladder policy). One mechanism, each caller keeps its own policy: DRY *and* SRP, not a trade between them.
+- **Derived tempo.** `startSources` reads the playback tempo off the buffer itself (`durationRef / buffer.duration`) so a buffer and its tempo can't drift apart — but the value is *approximate*, so it's used only for buffer-math; anything the user sees (the tempo slider on completion) uses the exact ladder value.
+
+Lifecycle: a `trainerTimeoutRef` holds the one pending transition; cancellation is routed through `stop()` so **every** stop path (including `load()`) kills the trainer; `isTraining` state disables the transport during a run; natural completion hands back at the target tempo (keeps looping, flips `isTraining` off, syncs the slider); manual Stop = silence.
+
+**Hard-won lessons (worth more than the feature).**
+
+- **Two clocks.** The transition "blip" was `setTimeout` timing the audio while the audio ran on `ctx.currentTime` — and the synchronous render-ahead stretch was itself *blocking* that timer. Never schedule audio off the JS clock; anchor to `AudioContext.currentTime`, use `setTimeout` only as a coarse wake-up.
+- **Derived vs. exact.** Feeding the loop the derived tempo (0.5036) but the timer the exact ladder value (0.5) made them drift apart every rep. One source of truth for a conversion; exact value for identity/display, approximate only for the math.
+- **Don't derive a discrete event from a sampled signal.** Counting loop laps off the requestAnimationFrame playhead is fragile (dropped frames, and RAF *pauses* when the tab is backgrounded). Computing the level's duration from the clock made the counting problem vanish.
+- **Aliasing a mutable ref.** Passing the caller's Map into a long-lived ref and then mutating it corrupted "what's playing." Fixed by copying at the boundary + a fresh map per level.
+- **Imperative timers need a cancel path.** Double-Start, Stop, and even dev-time HMR left orphaned `setTimeout`s firing playback minutes later. Every path that ends playback must clear the pending timer — centralized in `stop()`.
 
 ## Build approach
 
