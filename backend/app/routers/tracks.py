@@ -16,6 +16,7 @@ from app.database import get_db
 from app.models.track import Track
 from app.schemas.track import TrackResponse, TrackDetailResponse, TrackStatus
 from app.dependencies.auth import get_current_user_id
+from app.dependencies.rate_limit import rate_limit_upload
 
 router = APIRouter(prefix="/tracks")
 
@@ -35,7 +36,9 @@ def get_tracks(
     return db.execute(stmt).scalars().all()
 
 
-@router.post("/", response_model=TrackResponse)
+@router.post(
+    "/", response_model=TrackResponse, dependencies=[Depends(rate_limit_upload)]
+)
 async def process_audio(
     audio_file: UploadFile,
     user_id: uuid.UUID = Depends(get_current_user_id),
