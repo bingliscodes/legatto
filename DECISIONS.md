@@ -293,15 +293,25 @@ Daily-habit features layered on the spine. (This is the "Slice N" numbering that
 
 4. **Slow-down + A–B looping** ✅ (D8) — pitch-preserving time-stretch (SoundTouchJS, offline pre-stretch) + native `loopStart`/`loopEnd`, on a musical-seconds transport (pause/resume/seek/tempo-change-in-place).
 5. **Revisitable track library** ✅ (D9) — DB-backed persistence so tracks survive refresh and don't re-separate. Upload optimistically prepends to the list; the list polls `GET /tracks` (self-terminating when nothing's `queued`/`processing`) so status flips live; `GET /tracks/{id}` returns a stems map and clicking a `completed` track loads it into the player. `useSeparationJob` and the `/jobs` endpoint fully retired — the DB is the sole source of truth for track state. Runtime end-to-end, static analysis, and prod build are green.
-6. **Production deploy** ✅ (D11) — **LIVE at `https://legatto.live`.** Serverless GPU (RunPod) + object storage (DO Spaces) + Celery/Redis + self-hosted Postgres + self-served nginx SPA on a DigitalOcean droplet (Docker Compose), HTTPS via Let's Encrypt (auto-renewing), **CI/CD via GitHub Actions — `git push` to `main` builds → GHCR → deploys.** All four build steps ✅ (detail + hard-won lessons in D11). Remaining before real users are _operational_, not deploy: Postgres backups ✅ (automated daily cron + restore drill + DR tool — see D11 step 5), server hardening, and the pre-launch gate (presigned URLs + compressed stems).
-7. **Dedup via content hash** 📋 planned (D10) — split `Track` (user reference) / `Asset` (content-addressed artifact); skip re-separation on exact-file re-upload. With serverless GPU each separation is a metered per-call cost, so dedup saves real pennies + latency. Acoustic fingerprinting deferred.
+6. **Production deploy** ✅ (D11) — **LIVE at `https://legatto.live`.** Serverless GPU (RunPod) + object storage (DO Spaces) + Celery/Redis + self-hosted Postgres + self-served nginx SPA on a DigitalOcean droplet (Docker Compose), HTTPS via Let's Encrypt (auto-renewing), **CI/CD via GitHub Actions — `git push` to `main` builds → GHCR → deploys.** All four build steps ✅ (detail + hard-won lessons in D11). The real-user-readiness work that remained after deploy is now **all done**: Postgres backups/DR ✅ (D11 step 5), full non-root server hardening ✅ (D11/D12), pre-launch gate ✅ (presigned URLs + compressed stems), and abuse/cost guards ✅ (D14).
+7. **Dedup via content hash** 📋 **deferred** (D10, deferral confirmed in D12) — split `Track` (user reference) / `Asset` (content-addressed artifact) to skip re-separation on exact-file re-upload. Still worthwhile (each separation is a metered GPU call), just not urgent; revisit if cost warrants. Acoustic fingerprinting rejected (D13).
+8. **Speed trainer** ✅ (D13) — progressive-tempo practice (loop A–B → N reps → step up tempo); render-ahead pre-stretch + audio-clock scheduling.
 
-**Sequencing decided (2026-07-01):** library ✅ → **full production deploy** (D11) → dedup → ongoing. The earlier "deploy CPU first, measure per-song cost, then decide GPU" plan was **overridden**: minutes-long CPU turnaround is an unacceptable product UX, so the serverless-GPU decision is made, not measured (D11).
+**Platform / real-user-readiness shipped alongside (2026-07):** multi-user via anonymous identity (D12), the full abuse/cost-guard layer (D14), and daily-active-user tracking (Redis `SADD`/`SCARD` live count + nightly-snapshot table — kept in session memory rather than a D-entry: small + reversible).
+
+**Sequencing (as it actually went):** library ✅ (D9) → production deploy ✅ (D11) → real-user readiness ✅ (backups/DR, non-root hardening, pre-launch gate, multi-user D12, abuse guards D14) → speed trainer ✅ (D13) + DAU tracking. **Dedup (D10) slipped past deploy** rather than coming next as first sequenced. The earlier "deploy CPU first, measure per-song cost, then decide GPU" plan was **overridden** (D11): minutes-long CPU turnaround is an unacceptable product UX, so serverless GPU was decided, not measured.
 
 ---
 
 ## Pending (to decide next)
 
+**Currently open (2026-07-15):**
+- **Async RunPod refactor** — replace held-open `run_sync` with `endpoint.run()` + poll (the "proper" fix behind the Celery retry-backoff compromise that patched the RunPod cold-start `520`).
+- **DAU read-surface + deploy** — the tracking is built; needs the `-B` beat flag deployed and a small endpoint to surface today's `SCARD` + the `daily_active_users` history rows.
+- **Dedup (D10)** — deferred; revisit if storage/GPU cost warrants.
+- **Speed-trainer polish** — unmount timer cleanup, clear-error-on-input, live level/tempo readout.
+
+_Historical (resolved):_
 - ~~Confirm SQLAlchemy + Alembic vs raw SQL for DB access.~~ **Resolved (2026-06-30):** SQLAlchemy + Alembic — see D9.
 - ~~Slice 2: confirm `htdemucs_6s` install path on Apple Silicon (torch + MPS).~~ **Resolved:** runs on MPS (~15s for a 64s track). Needs the `torchcodec` Python package **and** system `ffmpeg` — `torchaudio` 2.11 decodes audio via `torchcodec`, which links FFmpeg. (`ffmpeg` 8 worked despite torchcodec historically targeting 4–7.)
 - Hosting/deployment target — decided; see D11 ~~(serverless GPU, Celery, DO droplet, self-served frontend). Remaining open sub-decisions: GPU provider (Modal / Replicate / RunPod), Postgres (self-hosted container vs. DO Managed), monthly cost ceiling.~~
