@@ -4,6 +4,14 @@ import { usePlayhead } from "@/hooks/use-playhead";
 import { cn } from "@/lib/utils";
 import { type Loop } from "@/hooks/use-audio-player";
 
+// seconds -> "m:ss" (e.g. 64 -> "1:04")
+function formatTime(seconds: number) {
+  const safe = Number.isFinite(seconds) ? Math.max(seconds, 0) : 0;
+  const m = Math.floor(safe / 60);
+  const s = Math.floor(safe % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
 export default function Playhead({
   getPlayhead,
   duration,
@@ -72,43 +80,69 @@ export default function Playhead({
   }
 
   return (
-    <div
-      ref={trackRef}
-      className="relative h-8 w-full rounded bg-muted"
-      onClick={handleClick}
-    >
-      {duration > 0 && loop.end > loop.start && (
-        <div
-          className={cn(
-            "absolute top-0 h-full",
-            loop.active
-              ? "bg-primary/30 border border-primary" // engaged: brighter + framed
-              : "bg-primary/10", // armed: faint, no border
-          )}
-          style={{
-            left: `${startPct}%`,
-            width: `${endPct - startPct}%`,
-          }}
-        />
-      )}
-      {loop.active && (
-        <div
-          className="absolute top-0 h-full w-1.5 -translate-x-1/2 bg-primary cursor-grab"
-          style={{ left: `${startPct}%` }}
-          onMouseDown={startDrag("start")}
-        />
-      )}
-      {loop.active && (
-        <div
-          className="absolute top-0 h-full w-1.5 -translate-x-1/2 bg-primary cursor-grab"
-          style={{ left: `${endPct}%` }}
-          onMouseDown={startDrag("end")}
-        />
-      )}
+    <>
       <div
-        className="absolute top-0 h-full w-0.5 bg-primary"
-        style={{ left: `${pct}%` }}
-      />
-    </div>
+        ref={trackRef}
+        className="relative h-8 w-full rounded bg-muted"
+        onClick={handleClick}
+      >
+        {duration > 0 && loop.end > loop.start && (
+          <div
+            className={cn(
+              "absolute top-0 h-full",
+              loop.active
+                ? "bg-primary/30 border border-primary" // engaged: brighter + framed
+                : "bg-primary/10", // armed: faint, no border
+            )}
+            style={{
+              left: `${startPct}%`,
+              width: `${endPct - startPct}%`,
+            }}
+          />
+        )}
+        {loop.active && (
+          <div
+            className="absolute top-0 h-full w-2 -translate-x-1/2 bg-primary cursor-ew-resize"
+            style={{ left: `${startPct}%` }}
+            onMouseDown={startDrag("start")}
+          />
+        )}
+        {loop.active && (
+          <div
+            className="absolute top-0 h-full w-2 -translate-x-1/2 bg-primary cursor-ew-resize"
+            style={{ left: `${endPct}%` }}
+            onMouseDown={startDrag("end")}
+          />
+        )}
+        <div
+          className="absolute top-0 h-full w-0.5 bg-primary"
+          style={{ left: `${pct}%` }}
+        />
+
+        {/* Loop-bound time labels, centered above each handle */}
+        {loop.active && loop.end > loop.start && (
+          <>
+            <span
+              className="absolute -top-5 -translate-x-1/2 text-xs tabular-nums text-primary"
+              style={{ left: `${startPct}%` }}
+            >
+              {formatTime(loopStart)}
+            </span>
+            <span
+              className="absolute -top-5 -translate-x-1/2 text-xs tabular-nums text-primary"
+              style={{ left: `${endPct}%` }}
+            >
+              {formatTime(loopEnd)}
+            </span>
+          </>
+        )}
+      </div>
+
+      {/* current time / total length */}
+      <div className="mt-1 flex justify-between text-xs tabular-nums text-muted-foreground">
+        <span>{formatTime(position)}</span>
+        <span>{formatTime(duration)}</span>
+      </div>
+    </>
   );
 }
