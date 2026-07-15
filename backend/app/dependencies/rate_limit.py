@@ -10,7 +10,7 @@ from app.config import settings
 redis_client = Redis.from_url(settings.redis_url, decode_responses=True)
 
 
-async def hit(key: str, limit: int, window_seconds: int) -> None:
+async def hit(key: str, limit: int, window_seconds: int) -> int | None:
     """Fixed-window rate limit for one counter.
 
     INCR the key (creates it at 1 if new). On that FIRST hit we set the TTL, so
@@ -28,11 +28,20 @@ async def hit(key: str, limit: int, window_seconds: int) -> None:
         await redis_client.expire(key, window_seconds)
     if count > limit:
         retry_after = await redis_client.ttl(key)
+
+        if limit == settings.global_daily_cap:
+            raise HTTPException(
+                status_code=500,
+                detail="Service at capacity. Please try again later",
+                headers={"Retry-After": str(max(retry_after, 1))},
+            )
         raise HTTPException(
             status_code=429,
             detail="Too many uploads. Please try again later.",
             headers={"Retry-After": str(max(retry_after, 1))},
         )
+
+    return True
 
 
 async def rate_limit_upload(request: Request) -> None:

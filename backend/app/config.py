@@ -38,6 +38,7 @@ class Settings(BaseSettings):
 
     upload_rate_per_hour: int = 10
     upload_rate_per_day: int = 30
+    global_daily_cap: int = 200
 
 
 settings = Settings()

@@ -6,6 +6,7 @@ from uuid import uuid4
 from pathlib import Path
 import uuid
 import io
+import datetime
 from mutagen import File as MutagenFile
 
 from app.storage import get_storage
@@ -16,7 +17,7 @@ from app.database import get_db
 from app.models.track import Track
 from app.schemas.track import TrackResponse, TrackDetailResponse, TrackStatus
 from app.dependencies.auth import get_current_user_id
-from app.dependencies.rate_limit import rate_limit_upload
+from app.dependencies.rate_limit import rate_limit_upload, hit
 
 router = APIRouter(prefix="/tracks")
 
@@ -69,6 +70,14 @@ async def process_audio(
             status_code=422,
             detail=f"Audio exceeds the {settings.max_audio_duration_seconds // 60}-minute limit",
         )
+
+    cap = await hit(
+        f"rl:global:day:{datetime.today().strftime('%Y-%m-%d')}",
+        settings.global_daily_cap,
+        86400,
+    )
+    if not cap:
+        return
 
     input_key = f"{track_id}/{Path(audio_file.filename).name}"
     output_prefix = f"{track_id}/stems/"
