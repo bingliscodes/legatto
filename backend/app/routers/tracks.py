@@ -70,14 +70,13 @@ async def process_audio(
             status_code=422,
             detail=f"Audio exceeds the {settings.max_audio_duration_seconds // 60}-minute limit",
         )
-
-    cap = await hit(
-        f"rl:global:day:{datetime.today().strftime('%Y-%m-%d')}",
-        settings.global_daily_cap,
-        86400,
+    await hit(
+        key=f"rl:global:day:{datetime.now(datetime.timezone.utc)}",
+        limit=settings.global_daily_cap,
+        window_seconds=86400,
+        detail="Service temporarily unavailable. Please try again later",
+        status_code=503,
     )
-    if not cap:
-        return
 
     input_key = f"{track_id}/{Path(audio_file.filename).name}"
     output_prefix = f"{track_id}/stems/"
