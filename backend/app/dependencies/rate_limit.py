@@ -48,5 +48,6 @@ async def rate_limit_upload(request: Request) -> None:
     ip = request.client.host if request.client else "unknown"
 
     await hit(f"rl:upload:h:{ip}", settings.upload_rate_per_hour, 3600)
+    await hit(f"rl:upload:d:{ip}", settings.upload_rate_per_day, 86400)
     # TODO(you): add the DAY window — same helper, different key + limit + seconds
     #   (settings.upload_rate_per_day, 86400). One line, mirrors the hour above.
