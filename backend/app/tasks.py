@@ -47,3 +47,14 @@ def stem_separator(track_id: str, input_key: str, output_prefix: str):
         db.commit()
     finally:
         db.close()
+
+
+from app import metrics
+from celery.schedules import crontab
+
+celery_app.conf.beat_schedule = {
+    "nightly-dau-snapshot": {
+        "task": "app.tasks.snapshot_dau",
+        "schedule": crontab(hour=1, minute=0),  # 01:00 UTC daily
+    },
+}
