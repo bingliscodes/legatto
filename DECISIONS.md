@@ -273,6 +273,26 @@ Lifecycle: a `trainerTimeoutRef` holds the one pending transition; cancellation 
 - **`import datetime` vs `from datetime import datetime`** — module vs class; `datetime.now()` is an `AttributeError` on the module.
 - **Stale state (same session):** `POSTGRES_*` env vars only apply on first volume init, so `down -v` re-mints creds from root `.env` (keep it and `backend/.env` in lockstep); and a signed session cookie surviving a `down -v` points at a wiped `users` row → FK violation on insert (the D12 trust-without-reverify tradeoff — fine in prod where users don't vanish; clear the cookie in dev).
 
+### D15 — Daily-active-user (DAU) tracking (Redis Set live count + nightly-snapshot history table)
+
+**Date:** 2026-07-15
+
+**Goal.** A cheap, honest "how many real users does this have?" metric — this project doubles as a portfolio piece, so pointing at active-user numbers matters. Needed: a live daily count *and* a persistent history for a trend, **without hammering the DB** on every request.
+
+**Design — a Redis Set per UTC day, snapshotted nightly.** `mark_active(user_id)` (in `app/metrics.py`) does `SADD active:{utc-date} {id}` + `EXPIRE …3d` on every request, called from `get_current_user_id`. Live count = `SCARD active:{today}`. A nightly **Celery-beat** task (`snapshot_dau`, `crontab(hour=1)` UTC) upserts yesterday's `SCARD` into a `daily_active_users(record_date PK, count)` table via Postgres `INSERT … ON CONFLICT DO UPDATE`, so the count survives Redis TTLs and a re-run is idempotent.
+
+**Key decisions + why:**
+- **A Redis Set, not a DB write per request.** A Set gives *unique* users for free (re-adding a member is a no-op), so there's no dedup logic and no "have I seen this user today?" read, and `SCARD` is O(1). The design goal was **zero per-request DB writes** — the DB takes exactly one row a night.
+- **`SADD`/`SCARD` (exact) over HyperLogLog (`PFADD`/`PFCOUNT`).** HLL is fixed-tiny memory but approximate; at this scale a plain Set is cheap and gives *exact* counts. Swap to HLL only if the user base ever reaches millions.
+- **Count on *both* auth paths** (existing session **and** new-user creation), so a load-and-bounce first-time visitor is counted from request 1, not skipped until a hypothetical 2nd request.
+- **A snapshot table for history**, because the Redis daily keys expire — the table is the durable trend. The `record_date` PK is what makes the nightly job idempotent (a retry overwrites rather than duplicating).
+
+**What it measures (caveat):** under D12 anonymous identity, "active users" = **active browser cookies** — a cookie-clearer counts as a new user. A fine portfolio proxy, but not verified humans; worth a footnote if it ever goes on a résumé.
+
+**Deferred (kept lean intentionally):** **no read-surface yet** — need a small endpoint for today's `SCARD` + the history rows to actually *display* the number; and it's **not live until deployed** with the worker running `-B` (embedded beat) and the migrate service creating the table.
+
+**Hard-won lesson.** Naming a `Mapped[date]` primary-key column `date` **shadows the imported `date` type**: the `= mapped_column(...)` assignment puts the column object into the class namespace, so `Mapped[date]` resolves to *that* instead of `datetime.date` → `MappedAnnotationError`. Renamed the column to `record_date`. (A bare `count: Mapped[int]` with no assignment is fine — nothing shadows `int`.)
+
 ## Build approach
 
 **Vertical slices, tracer-bullet first.** Build one thin end-to-end path before adding breadth.
@@ -297,7 +317,7 @@ Daily-habit features layered on the spine. (This is the "Slice N" numbering that
 7. **Dedup via content hash** 📋 **deferred** (D10, deferral confirmed in D12) — split `Track` (user reference) / `Asset` (content-addressed artifact) to skip re-separation on exact-file re-upload. Still worthwhile (each separation is a metered GPU call), just not urgent; revisit if cost warrants. Acoustic fingerprinting rejected (D13).
 8. **Speed trainer** ✅ (D13) — progressive-tempo practice (loop A–B → N reps → step up tempo); render-ahead pre-stretch + audio-clock scheduling.
 
-**Platform / real-user-readiness shipped alongside (2026-07):** multi-user via anonymous identity (D12), the full abuse/cost-guard layer (D14), and daily-active-user tracking (Redis `SADD`/`SCARD` live count + nightly-snapshot table — kept in session memory rather than a D-entry: small + reversible).
+**Platform / real-user-readiness shipped alongside (2026-07):** multi-user via anonymous identity (D12), the full abuse/cost-guard layer (D14), and daily-active-user tracking (D15).
 
 **Sequencing (as it actually went):** library ✅ (D9) → production deploy ✅ (D11) → real-user readiness ✅ (backups/DR, non-root hardening, pre-launch gate, multi-user D12, abuse guards D14) → speed trainer ✅ (D13) + DAU tracking. **Dedup (D10) slipped past deploy** rather than coming next as first sequenced. The earlier "deploy CPU first, measure per-song cost, then decide GPU" plan was **overridden** (D11): minutes-long CPU turnaround is an unacceptable product UX, so serverless GPU was decided, not measured.
 
@@ -307,7 +327,7 @@ Daily-habit features layered on the spine. (This is the "Slice N" numbering that
 
 **Currently open (2026-07-15):**
 - **Async RunPod refactor** — replace held-open `run_sync` with `endpoint.run()` + poll (the "proper" fix behind the Celery retry-backoff compromise that patched the RunPod cold-start `520`).
-- **DAU read-surface + deploy** — the tracking is built; needs the `-B` beat flag deployed and a small endpoint to surface today's `SCARD` + the `daily_active_users` history rows.
+- **DAU read-surface + deploy** (D15) — the tracking is built; needs the `-B` beat flag deployed and a small endpoint to surface today's `SCARD` + the `daily_active_users` history rows.
 - **Dedup (D10)** — deferred; revisit if storage/GPU cost warrants.
 - **Speed-trainer polish** — unmount timer cleanup, clear-error-on-input, live level/tempo readout.
 
