@@ -6,7 +6,7 @@ from uuid import uuid4
 from pathlib import Path
 import uuid
 import io
-import datetime
+from datetime import datetime, timezone
 from mutagen import File as MutagenFile
 
 from app.storage import get_storage
@@ -71,7 +71,7 @@ async def process_audio(
             detail=f"Audio exceeds the {settings.max_audio_duration_seconds // 60}-minute limit",
         )
     await hit(
-        key=f"rl:global:day:{datetime.now(datetime.timezone.utc)}",
+        key=f"rl:global:day:{datetime.now(timezone.utc).date()}",
         limit=settings.global_daily_cap,
         window_seconds=86400,
         detail="Service temporarily unavailable. Please try again later",
