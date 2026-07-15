@@ -1,6 +1,7 @@
 import uuid
 from redis import Redis
 from datetime import datetime, timezone, timedelta
+from sqlalchemy.dialects.postgresql import insert
 
 from app.database import SessionLocal
 from app.config import settings
@@ -20,12 +21,19 @@ def snapshot_active_users() -> DailyActiveUser:
 
     try:
         yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).date()
-        daily_users = redis_client.scard(f"active:{yesterday}")
+        count = redis_client.scard(f"active:{yesterday}")
 
-        new_row = DailyActiveUser(date=yesterday, count=daily_users)
-        db.add(new_row)
+        stmt = (
+            insert(DailyActiveUser)
+            .values(date=yesterday, count=count)
+            .on_conflict_do_update(
+                index_elements=["date"],
+                set_={"count": count},
+            )
+        )
+        db.execute(stmt)
         db.commit()
-        return daily_users
+        return count
 
     finally:
         db.close()
