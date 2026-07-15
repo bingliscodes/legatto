@@ -246,6 +246,33 @@ Lifecycle: a `trainerTimeoutRef` holds the one pending transition; cancellation 
 - **Aliasing a mutable ref.** Passing the caller's Map into a long-lived ref and then mutating it corrupted "what's playing." Fixed by copying at the boundary + a fresh map per level.
 - **Imperative timers need a cancel path.** Double-Start, Stop, and even dev-time HMR left orphaned `setTimeout`s firing playback minutes later. Every path that ends playback must clear the pending timer — centralized in `stop()`.
 
+### D14 — Abuse/cost guards before real users (upload validation + rate limiting + global cost cap)
+
+**Date:** 2026-07-15
+
+**Threat model — financial DoS, not just bad UX.** Every accepted upload spins a **metered RunPod GPU** job (~`$0.00016`/GPU-s → cents per song), and D12's anonymous identity means there's **no login gate** — anyone with the URL can upload, and the only per-user handle is a **droppable signed cookie**. So the real risk is someone (accidentally or maliciously) running up the GPU bill. You can't *perfectly* stop a determined abuser without real identity (payment / phone verify — overkill here), so the goal is reframed: **raise the cost of abuse and hard-cap the downside.**
+
+**Layered defense (cheap → expensive, reject as early as possible):**
+- **nginx `client_max_body_size 100M`** — oversized uploads rejected at the proxy before the app allocates a byte (guards memory; sized to fit a legit 5-min file).
+- **App validation** in the upload endpoint, before any storage/DB/enqueue: a **format allowlist** (`.mp3/.wav/.flac/.m4a/.ogg`), a **mutagen duration probe** rejecting > 5 min (*duration*, not bytes, is the GPU-cost driver — a small long file is the expensive one), and the **filename sanitized** (`Path(...).name`) into the storage key.
+- **Per-IP rate limit** — a custom Redis fixed-window counter (10/hr + 30/day) as a route dependency; the real client IP comes from uvicorn `--forwarded-allow-ips` (behind nginx, `request.client.host` is otherwise *nginx's* IP → global-by-accident).
+- **Global daily cost cap** — a single Redis counter (calendar-day bucket), checked *after* validation and *before* store/enqueue. This is the actual wallet protection: it bounds total daily GPU spend **regardless of how many IPs/cookies an abuser cycles through.** `daily_cap = budget ÷ real per-song cost`.
+
+**Key decisions + why:**
+- **Custom Redis counters over a library (slowapi).** One `hit(key, limit, window)` primitive serves *both* caps; Redis is already critical-path (Celery), so no new dependency, and fail-closed-on-Redis-down is acceptable.
+- **Per-key vs. global do different jobs.** Per-IP = *fairness/friction* against casual abuse, and it runs pre-validation so it counts *all* attempts incl. invalid ones (correct for throttling spam). The **global cap is the real cost bound** (per-IP is bypassable by cycling identity; the global counter isn't) — and it runs *post-validation, pre-store*, so it only counts real GPU-bound jobs and leaves no orphaned file/row on rejection.
+- **RunPod max-workers is a burst/latency lever, NOT a cost lever.** N jobs use the same total GPU-seconds serial or parallel — so the **daily cap** bounds spend; max-workers (kept low, 2–3) just bounds concurrency.
+- **Status codes:** `429` + `Retry-After` for per-IP; **`503`** (not `500`) for the global "at capacity" — a temporary-unavailability, not a server crash (`500` would pollute error monitoring).
+
+**Deferred (logged, not built):** OAuth-by-account (raises the bar on account-spam but doesn't close it; big lift — only if abuse materializes); an **`ffprobe`**-based check to close the *mutagen-vs-worker gap* (mutagen parses a *subset* of what the worker's ffmpeg decodes, so a decodable file can be wrongly rejected — but ffprobe needs ffmpeg in the API image).
+
+**Hard-won lessons.**
+- **mutagen returns a dict-like object → a tagless-but-valid file is *falsy*.** `if audio:` wrongly rejected a real MP3 with no ID3 tags. Test parse-failure with `audio is None`, never truthiness — a dict-like value conflates "empty" with "missing."
+- **A rate-limit key must bucket by its window, not a timestamp.** `datetime.now(...)` in the key made every request unique → the counter never accumulated → the cap silently did nothing. Bucket by `.date()`.
+- **Behind a proxy, the client IP isn't `request.client.host` by default** — it's the proxy's. `--forwarded-allow-ips` (trusting nginx's forwarded `X-Forwarded-For`) is what makes per-IP limiting real; hand-parsing the header is spoofable.
+- **`import datetime` vs `from datetime import datetime`** — module vs class; `datetime.now()` is an `AttributeError` on the module.
+- **Stale state (same session):** `POSTGRES_*` env vars only apply on first volume init, so `down -v` re-mints creds from root `.env` (keep it and `backend/.env` in lockstep); and a signed session cookie surviving a `down -v` points at a wiped `users` row → FK violation on insert (the D12 trust-without-reverify tradeoff — fine in prod where users don't vanish; clear the cookie in dev).
+
 ## Build approach
 
 **Vertical slices, tracer-bullet first.** Build one thin end-to-end path before adding breadth.
