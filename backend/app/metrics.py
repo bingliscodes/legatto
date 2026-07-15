@@ -15,18 +15,17 @@ def mark_active(user_id: uuid.UUID | str) -> None:
     redis_client.expire(key, 60 * 60 * 24 * 3, nx=True)
 
 
-def read_active_count() -> DailyActiveUser:
+def snapshot_active_users() -> DailyActiveUser:
     db = SessionLocal()
 
     try:
         yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).date()
         daily_users = redis_client.scard(f"active:{yesterday}")
 
-        new_row = DailyActiveUser(yesterday, daily_users)
+        new_row = DailyActiveUser(date=yesterday, count=daily_users)
         db.add(new_row)
         db.commit()
-        db.refresh()
-        return new_row
+        return daily_users
 
     finally:
         db.close()
