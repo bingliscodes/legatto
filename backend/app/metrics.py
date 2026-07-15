@@ -25,9 +25,9 @@ def snapshot_active_users() -> DailyActiveUser:
 
         stmt = (
             insert(DailyActiveUser)
-            .values(date=yesterday, count=count)
+            .values(record_date=yesterday, count=count)
             .on_conflict_do_update(
-                index_elements=["date"],
+                index_elements=["record_date"],
                 set_={"count": count},
             )
         )
