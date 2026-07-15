@@ -14,6 +14,7 @@ async def hit(
     key: str,
     limit: int,
     window_seconds: int,
+    *,
     detail="Too many uploads. Please try again later.",
     status_code=429,
 ) -> None:
