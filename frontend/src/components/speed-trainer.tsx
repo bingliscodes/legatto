@@ -72,7 +72,7 @@ export default function SpeedTrainer({
           min={50}
           max={100}
           step={5}
-          value={startTempo}
+          value={startTempo || ""}
           onChange={(e) => setStartTempo(Number(e.target.value))}
         />
         <NumberField
@@ -80,7 +80,7 @@ export default function SpeedTrainer({
           min={50}
           max={100}
           step={5}
-          value={endTempo}
+          value={endTempo || ""}
           onChange={(e) => setEndTempo(Number(e.target.value))}
         />
         <NumberField
@@ -88,7 +88,7 @@ export default function SpeedTrainer({
           min={1}
           max={99}
           step={1}
-          value={step}
+          value={step || ""}
           onChange={(e) => setStep(Number(e.target.value))}
         />
         <NumberField
@@ -96,7 +96,7 @@ export default function SpeedTrainer({
           min={1}
           max={10}
           step={1}
-          value={reps}
+          value={reps || ""}
           onChange={(e) => setReps(Number(e.target.value))}
         />
         <Button
