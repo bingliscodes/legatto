@@ -30,4 +30,4 @@ def get_current_user_id(request: Request, db: Session = Depends(get_db)) -> uuid
 def mark_active(user_id: uuid.UUID | str) -> None:
     key = f"active:{datetime.now(timezone.utc).date()}"
     redis_client.sadd(key, str(user_id))
-    redis_client.expire(key, 60 * 60 * 24 * 3)
+    redis_client.expire(key, 60 * 60 * 24 * 3, nx=True)
