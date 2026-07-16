@@ -16,7 +16,7 @@ def mark_active(user_id: uuid.UUID | str) -> None:
     redis_client.expire(key, 60 * 60 * 24 * 3, nx=True)
 
 
-def snapshot_active_users() -> DailyActiveUser:
+def snapshot_active_users() -> int:
     db = SessionLocal()
 
     try:
