@@ -6,6 +6,7 @@ export type Track = {
   id: string;
   display_name: string;
   artist: string | null;
+  is_demo: boolean;
   status: "queued" | "processing" | "completed" | "failed";
   created_at: string;
 };
