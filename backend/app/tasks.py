@@ -50,6 +50,13 @@ def stem_separator(track_id: str, input_key: str, output_prefix: str):
 
 
 from app import metrics
+
+
+@celery_app.task
+def snapshot_dau():
+    return metrics.snapshot_active_users()
+
+
 from celery.schedules import crontab
 
 celery_app.conf.beat_schedule = {
