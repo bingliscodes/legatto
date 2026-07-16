@@ -1,6 +1,8 @@
 # Legatto — Guitarist Practice Tool
 
-**Live at [legatto.live](https://legatto.live).**
+**Live at [legatto.live](https://legatto.live)** — a pre-separated demo track is already
+sitting in every new visitor's library, so you can try the player immediately without an
+account, an upload, or a wait.
 
 A practice tool for guitarists built on AI stem separation. Upload a song, split it into six
 stems (drums, bass, vocals, **guitar**, piano, other), and practice against it in an
@@ -87,6 +89,16 @@ point). Both have been rehearsed against production. See DECISIONS.md (D11 step 
 identity resolution, `SCARD` to count), snapshotted nightly into a `daily_active_users` table
 by a Celery beat task — unique counts with **zero per-request database writes**. See
 DECISIONS.md (D15).
+
+## Credits
+
+The demo track is used under a Creative Commons licence:
+
+> **"Holistic Thought (Pensamiento Holístico) – Progressive Post-Metal"** by
+> **David J. Barrios**, from the
+> [Free Music Archive](https://freemusicarchive.org/music/david-j-barrios/single/holistic-thought-pensamiento-holistico-progressive-post-metal/),
+> licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+> **Modified:** separated into six instrument stems for use as a demo.
 
 ## Local development
 

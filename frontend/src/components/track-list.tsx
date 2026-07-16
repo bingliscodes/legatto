@@ -39,14 +39,23 @@ function TrackItem({ track, onSelect }: TrackItemProps) {
         isCompleted && "cursor-pointer hover:bg-muted/50",
       )}
     >
-      <div className="min-w-0">
-        <p className="truncate font-medium">{track.display_name}</p>
-        {track.artist && (
-          <p className="truncate text-sm text-muted-foreground">
-            {track.artist}
-          </p>
+      <div className="flex min-w-0 items-center gap-3">
+        {track.is_demo && (
+          <span className="rounded bg-primary/10 text-primary px-1.5 py-0.5 text-xs">
+            Demo
+          </span>
         )}
+
+        <div className="min-w-0">
+          <p className="truncate font-medium">{track.display_name}</p>
+          {track.artist && (
+            <p className="truncate text-sm text-muted-foreground">
+              {track.artist}
+            </p>
+          )}
+        </div>
       </div>
+
       <div className="flex shrink-0 items-center gap-3 text-sm text-muted-foreground">
         <span className="rounded bg-muted px-1.5 py-0.5 text-xs">
           {track.status}
