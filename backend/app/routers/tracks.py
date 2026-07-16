@@ -104,7 +104,7 @@ def get_track(
 ):
     track = db.get(Track, uuid.UUID(track_id))
 
-    if not track.is_demo and (not track or track.user_id != user_id):
+    if not track or (track.user_id != user_id and not track.is_demo):
         raise HTTPException(status_code=404)
     stems = {}
     if track.status == TrackStatus.completed:
