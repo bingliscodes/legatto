@@ -33,7 +33,7 @@ def get_tracks(
     """
     stmt = (
         select(Track)
-        .where(Track.user_id == user_id | Track.is_demo)
+        .where((Track.user_id == user_id) | (Track.is_demo))
         .order_by(Track.created_at.desc())
     )
     return db.execute(stmt).scalars().all()
