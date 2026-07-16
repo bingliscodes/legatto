@@ -12,6 +12,7 @@ class TrackResponse(BaseModel):
     artist: str | None
     status: TrackStatus
     created_at: datetime
+    is_demo: bool
 
 
 class TrackDetailResponse(TrackResponse):
