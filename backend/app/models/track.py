@@ -26,4 +26,4 @@ class Track(Base):
         DateTime(timezone=True), server_default=func.now()
     )
     user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
-    is_demo: Mapped[bool] = mapped_column(default=False)
+    is_demo: Mapped[bool] = mapped_column(server_default=False)
