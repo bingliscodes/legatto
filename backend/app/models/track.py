@@ -1,4 +1,4 @@
-from sqlalchemy import DateTime, func, ForeignKey
+from sqlalchemy import DateTime, func, ForeignKey, false
 from sqlalchemy.orm import Mapped, mapped_column
 import uuid
 import enum
@@ -26,4 +26,4 @@ class Track(Base):
         DateTime(timezone=True), server_default=func.now()
     )
     user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
-    is_demo: Mapped[bool] = mapped_column(server_default=False)
+    is_demo: Mapped[bool] = mapped_column(default=False, server_default=false())
