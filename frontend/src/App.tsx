@@ -90,10 +90,11 @@ function App() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <input
                 type="file"
                 accept="audio/*"
+                className="max-w-full text-sm"
                 onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
@@ -117,19 +118,23 @@ function App() {
               <Button onClick={toggleLoop} disabled={isTraining}>
                 Toggle Loop
               </Button>
-              <Slider
-                value={[tempo]}
-                disabled={isTraining}
-                min={0.5}
-                max={1.0}
-                step={0.01}
-                onValueChange={([v]) => setTempo(v)}
-                className="flex-1"
-                aria-label="tempo"
-              />
-              <span className="w-12 shrink-0 text-right text-sm tabular-nums text-muted-foreground">
-                {tempo.toFixed(2)}×
-              </span>
+              {/* Slider + readout share a wrapper so they wrap as one unit —
+                  a tempo number orphaned onto its own line reads as a bug. */}
+              <div className="flex min-w-48 flex-1 items-center gap-2">
+                <Slider
+                  value={[tempo]}
+                  disabled={isTraining}
+                  min={0.5}
+                  max={1.0}
+                  step={0.01}
+                  onValueChange={([v]) => setTempo(v)}
+                  className="flex-1"
+                  aria-label="tempo"
+                />
+                <span className="w-12 shrink-0 text-right text-sm tabular-nums text-muted-foreground">
+                  {tempo.toFixed(2)}×
+                </span>
+              </div>
             </div>
             <SpeedTrainer
               onStart={startTrainer}
