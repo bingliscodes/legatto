@@ -15,6 +15,7 @@ import { API_BASE, getTrack, type Track } from "./lib/api";
 import Playhead from "./components/playhead";
 import TrackList from "./components/track-list";
 import SpeedTrainer from "./components/speed-trainer";
+import logo from "@/assets/logo.webp";
 
 function App() {
   const {
@@ -167,9 +168,16 @@ function App() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                Click the Demo or "Choose file" to begin.
-              </p>
+              <div className="flex flex-col items-center gap-3 py-6">
+                <img
+                  src={logo}
+                  alt="Cannoli the cat standing beside an electric guitar"
+                  className="h-48 w-auto"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Click the Demo or "Choose file" to begin.
+                </p>
+              </div>
             )}
           </CardContent>
         </Card>

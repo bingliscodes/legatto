@@ -28,3 +28,7 @@ storage/
 ssh_key*
 *.pem
 id_ed25519*
+
+# Logo images
+cannoli.png
+guitar.png
