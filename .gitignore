@@ -30,5 +30,5 @@ ssh_key*
 id_ed25519*
 
 # Logo images
-cannoli.png
-guitar.png
+frontend/src/assets/cannoli.png
+frontend/src/assets/guitar.png
