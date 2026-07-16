@@ -71,7 +71,7 @@ function App() {
           <div className="flex items-center gap-2">
             {/* Rename to whatever you want to call it */}
             <span className="text-xl font-semibold tracking-tight">
-              Stem Practice
+              Learn with <i>Legatto</i>
             </span>
             <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
               beta
@@ -163,7 +163,7 @@ function App() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Click "Choose file" to begin.
+                Click the Demo or "Choose file" to begin.
               </p>
             )}
           </CardContent>
