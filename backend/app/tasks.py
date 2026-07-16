@@ -1,7 +1,7 @@
 # the stem separator — the "work"
 import uuid
 from requests.exceptions import HTTPError
-from celery.schedules import crontab
+
 
 from app.database import SessionLocal
 from app.separator import get_separator
@@ -54,11 +54,3 @@ def stem_separator(track_id: str, input_key: str, output_prefix: str):
 @celery_app.task
 def snapshot_dau():
     return metrics.snapshot_active_users()
-
-
-celery_app.conf.beat_schedule = {
-    "nightly-dau-snapshot": {
-        "task": "app.tasks.snapshot_dau",
-        "schedule": crontab(hour=1, minute=0),  # 01:00 UTC daily
-    },
-}

@@ -32,7 +32,9 @@ def get_tracks(
     TODO: Add pagination/.limit()
     """
     stmt = (
-        select(Track).where(Track.user_id == user_id).order_by(Track.created_at.desc())
+        select(Track)
+        .where(Track.user_id == user_id | Track.is_demo)
+        .order_by(Track.created_at.desc())
     )
     return db.execute(stmt).scalars().all()
 
@@ -102,7 +104,7 @@ def get_track(
 ):
     track = db.get(Track, uuid.UUID(track_id))
 
-    if not track or track.user_id != user_id:
+    if not track.is_demo and (not track or track.user_id != user_id):
         raise HTTPException(status_code=404)
     stems = {}
     if track.status == TrackStatus.completed:
