@@ -1,0 +1,19 @@
+# Dozzle — container log viewer. OPS TOOL, run manually; NOT part of the CI deploy.
+# CI deploys with `-f compose.yaml -f compose.prod.yaml`, so this file is never
+# auto-loaded — it just rides along via `git pull` and you start it by hand:
+#
+#   On the droplet:  docker compose -f compose.dozzle.yaml -p legatto-ops up -d
+#   From your Mac:   ssh -L 8080:127.0.0.1:8080 deploy@147.182.243.122
+#                    then browse http://localhost:8080
+#
+# Deliberately its own project (-p legatto-ops) so an app `up`/`down` never
+# touches it — you want the log viewer alive precisely when a deploy is broken.
+services:
+  dozzle:
+    image: amir20/dozzle:v8            # pinned, not :latest — this image gets the Docker socket
+    container_name: dozzle
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"          # LOOPBACK ONLY. Not reachable from the internet; SSH-tunnel to it.
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro   # read-only; Dozzle only needs to read logs
