@@ -15,6 +15,7 @@ import { API_BASE, getTrack, type Track } from "./lib/api";
 import Playhead from "./components/playhead";
 import TrackList from "./components/track-list";
 import SpeedTrainer from "./components/speed-trainer";
+import { Tour } from "@/components/tour";
 import logo from "@/assets/logo.webp";
 
 function App() {
@@ -65,12 +66,18 @@ function App() {
   const stemNames = Object.keys(stemState);
   const loaded = stemNames.length > 0;
 
+  const demoTrack = tracks.find(
+    (t) => t.is_demo && t.status === "completed",
+  );
+  const loadDemo = () => {
+    if (demoTrack) handleTrackClick(demoTrack);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2">
-            {/* Rename to whatever you want to call it */}
             <span className="text-xl font-semibold tracking-tight">
               Learn with <i>Legatto</i>
             </span>
@@ -91,7 +98,10 @@ function App() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex flex-wrap items-center gap-2">
+            <div
+              className="flex flex-wrap items-center gap-2"
+              data-tour="player-controls"
+            >
               <input
                 type="file"
                 accept="audio/*"
@@ -153,7 +163,7 @@ function App() {
             <TrackList tracks={tracks} onSelect={handleTrackClick} />
 
             {loaded ? (
-              <div className="space-y-2">
+              <div className="space-y-2" data-tour="stem-controls">
                 {stemNames.map((name) => (
                   <StemControl
                     key={name}
@@ -182,6 +192,8 @@ function App() {
           </CardContent>
         </Card>
       </main>
+
+      <Tour hasDemo={!!demoTrack} loaded={loaded} loadDemo={loadDemo} />
     </div>
   );
 }

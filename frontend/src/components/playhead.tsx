@@ -83,6 +83,7 @@ export default function Playhead({
     <>
       <div
         ref={trackRef}
+        data-tour="seek-bar"
         className="relative h-8 w-full rounded bg-muted"
         onClick={handleClick}
       >

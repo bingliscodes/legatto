@@ -31,6 +31,7 @@ function TrackItem({ track, onSelect }: TrackItemProps) {
   const isCompleted = track.status === "completed";
   return (
     <div
+      data-tour={track.is_demo ? "demo-track" : undefined}
       onClick={() => {
         if (isCompleted) onSelect(track);
       }}
