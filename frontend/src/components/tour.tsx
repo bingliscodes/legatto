@@ -75,6 +75,12 @@ export function Tour({ hasDemo, loaded, loadDemo }: TourProps) {
             textColor: "var(--popover-foreground)",
             overlayColor: "rgba(0, 0, 0, 0.6)",
           },
+          // Match the app's primary buttons: joyride's default button text is
+          // light, which washes out on the light `primaryColor`. Pair it with
+          // the dark `--primary-foreground` instead.
+          buttonNext: {
+            color: "var(--primary-foreground)",
+          },
         }}
       />
 
