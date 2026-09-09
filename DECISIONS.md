@@ -318,6 +318,27 @@ Lifecycle: a `trainerTimeoutRef` holds the one pending transition; cancellation 
 - **Guard ordering kills the None check.** `if not track.is_demo and (not track or …)` dereferences `.is_demo` *before* testing for `None` → `AttributeError`/500 on a missing id, and the `not track` inside the parens becomes dead code. Correct: `if track is None or (track.user_id != user_id and not track.is_demo)`. (Prefer `track is None` over `not track` — the same implicit-truthiness trap that made a tagless MP3's falsy-but-not-None mutagen object reject valid uploads in D14.)
 - **The two-machines trap.** `docker compose exec postgres psql` runs against **whatever host you're on**. Promoting the demo from the Mac returns a satisfying `UPDATE 1` and changes *nothing* about production. The migration must deploy first (the `migrate` service adds the column), the demo must be uploaded through `legatto.live` (not localhost, or the stems and row are in the wrong place), and the promote must run **on the droplet**. Failing early is fine; this one fails *silently*.
 
+### D17 — First-visit guided tour (react-joyride, fully-guided, demo auto-load)
+
+**Date:** 2026-09-09
+
+**Problem — a new visitor lands on the player with no idea what it does.** The demo (D16) means there's always something to play, but nothing tells a first-timer to click it, or what mute/solo/loop/tempo are for. The goal is faster "first successful play-along," which feeds the daily-habit retention thesis.
+
+**Design — an opt-in welcome modal → a 4-step anchored walkthrough → never nag again.** On first visit (once the demo is available) a radix `Dialog` asks "Take a quick tour?"; accepting dims the app and steps through demo track → player controls → seek bar → per-stem volumes. Every exit path writes `practice-tool-tour-seen=true` to `localStorage` (same direct-access convention as the theme key). A persistent `?` help button (`fixed bottom-4 right-4`) re-launches the tour or jumps to any step.
+
+**Key decisions + why:**
+- **react-joyride over a hand-rolled tour.** Overlay, spotlight, positioning, and Next/Back are the whole job and are fiddly to get right (scroll, resize, focus). A ~2-decision feature isn't worth reimplementing that. Cost: a dependency whose peer range predates React 19, so it installs with `--legacy-peer-deps` (runtime is unaffected).
+- **Fully guided, not interactive.** Steps advance via Next/Back (`spotlightClicks` off), so the tour never depends on the user operating the real controls in the right order. Copy can still say "hit Play," but it's optional.
+- **Auto-load the demo behind the scenes.** The per-stem controls only exist in the DOM when a track is `loaded` (`App.tsx`), so the volume step has no anchor on a fresh page. Accepting the tour (or jumping to a player step from the help menu) calls `loadDemo()` first. The fetch+decode overlaps the click-through, so it's ready by the time the walkthrough reaches it.
+- **Controlled mode (we own `stepIndex`).** Needed so the help menu can open the tour at an arbitrary step, and so a not-yet-loaded target can simply *wait* — leaving `TARGET_NOT_FOUND` unhandled means joyride re-anchors when `loaded` flips.
+- **Help button bypasses the gate without clearing it.** Replaying forces `run=true` but never removes the `seen` flag, so a replay doesn't re-arm the first-visit auto-launch.
+- **Auto-launch guarded on `hasDemo`.** No completed demo ⇒ no auto-tour (never show a walkthrough with broken anchors); the `?` button stays available regardless.
+
+**Hard-won lessons.**
+- **joyride's default button text is light, and `primaryColor` is light in dark mode** (`--primary` = `oklch(0.922)`), so the Next button washed out (light-on-light). Fix: pair it with the dark `--primary-foreground`, matching the app's own `bg-primary text-primary-foreground` buttons.
+
+**Deferred:** automated tests — no frontend test harness exists yet (see Pending).
+
 ## Build approach
 
 **Vertical slices, tracer-bullet first.** Build one thin end-to-end path before adding breadth.
@@ -342,6 +363,7 @@ Daily-habit features layered on the spine. (This is the "Slice N" numbering that
 7. **Dedup via content hash** 📋 **deferred** (D10, deferral confirmed in D12) — split `Track` (user reference) / `Asset` (content-addressed artifact) to skip re-separation on exact-file re-upload. Still worthwhile (each separation is a metered GPU call), just not urgent; revisit if cost warrants. Acoustic fingerprinting rejected (D13).
 8. **Speed trainer** ✅ (D13) — progressive-tempo practice (loop A–B → N reps → step up tempo); render-ahead pre-stretch + audio-clock scheduling.
 9. **Pre-separated demo track** ✅ (D16) — a CC-licensed, already-separated track sitting in every new visitor's library, so the app demonstrates itself with no upload, no wait, and no GPU cost per visitor.
+10. **First-visit guided tour** ✅ (D17) — opt-in welcome modal + fully-guided react-joyride walkthrough (demo track → controls → seek → stems), first-visit-gated in `localStorage`, auto-loading the demo so later steps have anchors, plus a persistent `?` help button to replay or jump to any step.
 
 **Platform / real-user-readiness shipped alongside (2026-07):** multi-user via anonymous identity (D12), the full abuse/cost-guard layer (D14), and daily-active-user tracking (D15).
 
@@ -357,6 +379,7 @@ Daily-habit features layered on the spine. (This is the "Slice N" numbering that
 - **Demo-track follow-ups** (D16) — a **delete path** (none exists; when it lands, `is_demo` rows need a guard); a **partial unique index** to make "exactly one demo" a DB invariant instead of a hand-run transaction; and swapping in original/cleared material if the guitar teacher supplies any (one `UPDATE`, by design).
 - **Dedup (D10)** — deferred; revisit if storage/GPU cost warrants.
 - **Speed-trainer polish** — unmount timer cleanup, clear-error-on-input, live level/tempo readout.
+- **Frontend test harness + tour tests** (D17) — no Vitest/RTL/jsdom set up yet. When it lands, cover: first-visit `localStorage` gating, accept/decline persistence, controlled step advancement, and per-step target/copy. (Pixel-accurate spotlight placement would need Playwright, not jsdom.)
 
 _Historical (resolved):_
 - ~~Confirm SQLAlchemy + Alembic vs raw SQL for DB access.~~ **Resolved (2026-06-30):** SQLAlchemy + Alembic — see D9.
