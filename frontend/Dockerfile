@@ -1,7 +1,7 @@
 # ---- Stage 1: build the static SPA ----
 FROM node:20-slim AS build
 WORKDIR /app
-COPY package*.json .npmrc ./
+COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN npm run build   # tsc -b && vite build -> /app/dist

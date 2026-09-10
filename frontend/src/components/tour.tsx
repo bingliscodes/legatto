@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import Joyride from "react-joyride";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { CircleHelp } from "lucide-react";
 
@@ -25,11 +24,9 @@ export function Tour({ hasDemo, loaded, loadDemo }: TourProps) {
     hasSeenTour,
     showWelcome,
     setShowWelcome,
-    run,
-    stepIndex,
     startTour,
     declineTour,
-    handleJoyrideCallback,
+    Tour: JoyrideTour,
   } = useTour();
 
   // Auto-open the welcome modal once, on the first visit, but only after the
@@ -55,34 +52,7 @@ export function Tour({ hasDemo, loaded, loadDemo }: TourProps) {
         onDecline={declineTour}
       />
 
-      <Joyride
-        steps={tourSteps}
-        run={run}
-        stepIndex={stepIndex}
-        continuous
-        showProgress
-        showSkipButton
-        disableOverlayClose
-        scrollToFirstStep
-        callback={handleJoyrideCallback}
-        locale={{ last: "Finish" }}
-        styles={{
-          options: {
-            zIndex: 10000,
-            primaryColor: "var(--primary)",
-            backgroundColor: "var(--popover)",
-            arrowColor: "var(--popover)",
-            textColor: "var(--popover-foreground)",
-            overlayColor: "rgba(0, 0, 0, 0.6)",
-          },
-          // Match the app's primary buttons: joyride's default button text is
-          // light, which washes out on the light `primaryColor`. Pair it with
-          // the dark `--primary-foreground` instead.
-          buttonNext: {
-            color: "var(--primary-foreground)",
-          },
-        }}
-      />
+      {JoyrideTour}
 
       <TourHelpButton onStart={begin} />
     </>
