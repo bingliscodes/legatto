@@ -12,23 +12,23 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4 # clone repo into the runner
+      - uses: actions/checkout@v7 # clone repo into the runner
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN}} # auto-provided, no setup
 
       - name: Build & push API image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./backend # points build-push-action to the folder's Dockerfile
           push: true
           tags: ghcr.io/bingliscodes/legatto-api:latest
       - name: Build & push frontend image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./frontend
           push: true
